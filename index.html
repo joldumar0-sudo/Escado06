@@ -1,0 +1,2316 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESCADO — Portal do Agrupamento 06</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+  :root {
+    --verde: #2d6a2d;
+    --verde-escuro: #1a3f1a;
+    --verde-claro: #4a9e4a;
+    --verde-neon: #5eff5e;
+    --ouro: #c9a84c;
+    --ouro-claro: #e8c97a;
+    --roxo: #4a2080;
+    --creme: #f5f0e8;
+    --amarelo: #f5c842;
+    --bg: #0f1a0f;
+    --card: #151f15;
+    --card2: #1c2a1c;
+    --texto: #d4e8d4;
+    --texto-sub: #7a9e7a;
+    --borda: #2a3f2a;
+    --header-h: 64px;
+    --nav-h: 46px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--texto);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== LOGIN ===== */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 80%, rgba(45,106,45,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 60% at 80% 20%, rgba(74,158,74,0.2) 0%, transparent 50%),
+      linear-gradient(160deg, #0a120a 0%, #0f1a0f 50%, #0a160a 100%);
+  }
+
+  .login-trees {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 260px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 260'%3E%3Cpolygon points='0,260 80,80 160,260' fill='%23132213'/%3E%3Cpolygon points='60,260 140,40 220,260' fill='%231a2e1a'/%3E%3Cpolygon points='200,260 290,100 380,260' fill='%23132213'/%3E%3Cpolygon points='320,260 420,60 520,260' fill='%231a2e1a'/%3E%3Cpolygon points='450,260 550,90 650,260' fill='%23132213'/%3E%3Cpolygon points='580,260 680,50 780,260' fill='%231a2e1a'/%3E%3Cpolygon points='700,260 810,80 920,260' fill='%23132213'/%3E%3Cpolygon points='860,260 960,110 1060,260' fill='%231a2e1a'/%3E%3Cpolygon points='980,260 1090,65 1200,260' fill='%23132213'/%3E%3C/svg%3E") bottom/cover no-repeat;
+  }
+
+  .login-box {
+    position: relative; z-index: 10;
+    text-align: center; max-width: 420px; width: 90%;
+    padding: 50px 40px;
+    background: rgba(21,31,21,0.88);
+    border: 1px solid var(--borda);
+    border-radius: 16px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 80px rgba(45,106,45,0.2), 0 30px 60px rgba(0,0,0,0.5);
+    animation: fadeUp 0.8s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .scout-emblem { width: 80px; height: 80px; margin: 0 auto 20px; }
+  .scout-emblem svg { width: 100%; height: 100%; }
+
+  .login-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px; letter-spacing: 4px;
+    color: var(--creme); line-height: 1; margin-bottom: 4px;
+  }
+
+  .login-subtitle {
+    font-size: 13px; color: var(--texto-sub);
+    letter-spacing: 3px; text-transform: uppercase; margin-bottom: 36px;
+  }
+
+  .enter-btn {
+    width: 100%; padding: 14px 20px;
+    background: var(--verde); color: #fff;
+    border: none; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    letter-spacing: 1px;
+  }
+
+  .enter-btn:hover { background: var(--verde-claro); transform: translateY(-2px); }
+  .login-footer { margin-top: 18px; font-size: 12px; color: var(--texto-sub); font-style: italic; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    z-index: 1000; display: none;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+
+  .modal-box {
+    background: var(--card); border: 1px solid var(--borda);
+    border-radius: 16px; padding: 36px;
+    width: 100%; max-width: 400px;
+    animation: fadeUp 0.3s ease both;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-box h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; letter-spacing: 2px; margin-bottom: 6px; color: var(--creme);
+  }
+  .modal-box p { font-size: 13px; color: var(--texto-sub); margin-bottom: 24px; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 12px; color: var(--texto-sub); margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+  .form-group input, .form-group select {
+    width: 100%; padding: 12px 14px;
+    background: var(--bg); border: 1px solid var(--borda);
+    border-radius: 8px; color: var(--texto);
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--verde-claro); }
+  .form-group select option { background: var(--bg); }
+
+  .btn-primary {
+    width: 100%; padding: 13px;
+    background: var(--verde); color: #fff;
+    border: none; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; margin-top: 8px;
+  }
+  .btn-primary:hover { background: var(--verde-claro); transform: translateY(-1px); }
+
+  /* ===== APP ===== */
+  #app { display: none; min-height: 100vh; flex-direction: column; }
+
+  .app-header {
+    background: var(--card); border-bottom: 1px solid var(--borda);
+    padding: 0 20px; height: var(--header-h);
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    flex-shrink: 0;
+  }
+
+  .header-logo { display: flex; align-items: center; gap: 12px; }
+  .header-logo svg { width: 32px; height: 32px; flex-shrink: 0; }
+
+  .header-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 3px; color: var(--creme);
+  }
+
+  .header-right { display: flex; align-items: center; gap: 10px; }
+
+  .user-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--verde);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; color: #fff;
+    border: 2px solid var(--verde-claro); flex-shrink: 0;
+  }
+
+  .btn-logout {
+    padding: 7px 12px;
+    background: transparent; color: var(--texto-sub);
+    border: 1px solid var(--borda); border-radius: 8px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .btn-logout:hover { color: var(--texto); border-color: var(--verde-claro); }
+
+  .app-nav {
+    background: var(--card); border-bottom: 1px solid var(--borda);
+    display: flex; gap: 0; padding: 0 8px; overflow-x: auto;
+    scrollbar-width: none; flex-shrink: 0;
+    height: var(--nav-h);
+  }
+  .app-nav::-webkit-scrollbar { display: none; }
+
+  .nav-item {
+    padding: 0 14px; color: var(--texto-sub); cursor: pointer;
+    font-size: 13px; font-weight: 500; height: 100%;
+    display: flex; align-items: center; gap: 7px;
+    border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .nav-item:hover { color: var(--texto); }
+  .nav-item.active { color: var(--verde-neon); border-bottom-color: var(--verde-neon); }
+  .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  .app-content {
+    flex: 1; max-width: 1100px;
+    margin: 0 auto; width: 100%; padding: 28px 20px;
+    overflow-y: auto;
+  }
+
+  .section { display: none; animation: fadeUp 0.3s ease both; }
+  .section.active { display: block; }
+
+  /* ===== INÍCIO ===== */
+  .welcome-banner {
+    background: linear-gradient(135deg, var(--verde-escuro), var(--card2));
+    border: 1px solid var(--borda); border-radius: 16px;
+    padding: 36px; margin-bottom: 28px; position: relative; overflow: hidden;
+  }
+  .welcome-banner::before {
+    content: '⚜️';
+    position: absolute; right: 24px; top: 50%; transform: translateY(-50%);
+    font-size: 80px; opacity: 0.07; pointer-events: none;
+  }
+  .welcome-banner h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px; letter-spacing: 2px; color: var(--creme); margin-bottom: 8px;
+  }
+  .welcome-banner p { color: var(--texto-sub); font-size: 14px; line-height: 1.6; }
+
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px; margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--borda); border-radius: 12px;
+    padding: 20px; display: flex; align-items: center; gap: 14px; transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--verde-claro); }
+  .stat-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: rgba(45,106,45,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--creme); line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--texto-sub); }
+
+  .section-heading {
+    font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+    letter-spacing: 2px; color: var(--creme); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-heading::after { content: ''; flex: 1; height: 1px; background: var(--borda); }
+
+  .activity-feed { background: var(--card); border: 1px solid var(--borda); border-radius: 12px; overflow: hidden; }
+  .activity-item {
+    padding: 16px 20px; display: flex; align-items: center; gap: 14px;
+    border-bottom: 1px solid var(--borda); transition: background 0.15s;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-item:hover { background: var(--card2); }
+  .activity-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--verde-claro); flex-shrink: 0; }
+  .activity-dot.yellow { background: var(--amarelo); }
+  .activity-dot.brown { background: #8b5e3c; }
+  .activity-text { flex: 1; font-size: 14px; }
+  .activity-time { font-size: 12px; color: var(--texto-sub); font-family: 'DM Mono'; white-space: nowrap; }
+
+  /* ===== MANUAIS ===== */
+  .manuals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+  .manual-card {
+    background: var(--card); border: 1px solid var(--borda);
+    border-radius: 14px; overflow: hidden; cursor: pointer; transition: all 0.25s;
+  }
+  .manual-card:hover { border-color: var(--verde-claro); transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
+  .manual-cover {
+    height: 140px; display: flex; align-items: center; justify-content: center;
+    font-size: 60px; position: relative; overflow: hidden;
+  }
+  .manual-cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.5)); }
+  .manual-body { padding: 18px; }
+  .manual-tag { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--verde-neon); margin-bottom: 6px; font-family: 'DM Mono'; }
+  .manual-title { font-weight: 600; font-size: 15px; color: var(--creme); margin-bottom: 8px; line-height: 1.3; }
+  .manual-desc { font-size: 13px; color: var(--texto-sub); line-height: 1.5; margin-bottom: 14px; }
+  .manual-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--texto-sub); }
+  .btn-open {
+    padding: 7px 14px; background: var(--verde); color: #fff;
+    border: none; border-radius: 6px; font-size: 12px;
+    font-family: 'DM Sans', sans-serif; font-weight: 600;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .btn-open:hover { background: var(--verde-claro); }
+  .manual-viewer { display: none; background: var(--card); border: 1px solid var(--borda); border-radius: 14px; padding: 32px; animation: fadeUp 0.3s ease both; }
+  .manual-viewer.active { display: block; }
+  .manuals-list.hidden { display: none; }
+  .viewer-back { display: flex; align-items: center; gap: 8px; color: var(--verde-claro); cursor: pointer; font-size: 14px; margin-bottom: 24px; width: fit-content; }
+  .viewer-back:hover { color: var(--verde-neon); }
+  .viewer-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; color: var(--creme); margin-bottom: 6px; }
+  .viewer-tag { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--verde-neon); font-family: 'DM Mono'; margin-bottom: 20px; }
+  .viewer-body { color: var(--texto); line-height: 1.8; font-size: 15px; }
+  .viewer-body h3 { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; color: var(--amarelo); margin: 24px 0 10px; }
+  .viewer-body p { margin-bottom: 14px; color: var(--texto-sub); }
+  .viewer-body ul { margin-left: 20px; margin-bottom: 14px; }
+  .viewer-body li { margin-bottom: 6px; color: var(--texto-sub); }
+  .viewer-body .tip-box { background: rgba(45,106,45,0.15); border-left: 3px solid var(--verde-claro); padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; font-size: 14px; }
+  .tag-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag-badge.verde { background: rgba(45,106,45,0.3); color: var(--verde-neon); }
+
+  /* ===== GALERIA ===== */
+  .gallery-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .gallery-item { aspect-ratio: 1; border-radius: 10px; overflow: hidden; cursor: pointer; position: relative; background: var(--card2); border: 1px solid var(--borda); transition: transform 0.2s; }
+  .gallery-item:hover { transform: scale(1.02); }
+  .gallery-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 56px; background: var(--card2); }
+  .gallery-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%); opacity: 0; transition: opacity 0.2s; display: flex; align-items: flex-end; padding: 10px; }
+  .gallery-item:hover .gallery-overlay { opacity: 1; }
+  .gallery-label { font-size: 12px; color: #fff; font-weight: 500; }
+  .btn-upload {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px; background: var(--verde); color: #fff;
+    border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+  }
+  .btn-upload:hover { background: var(--verde-claro); }
+  .gallery-empty { text-align:center; padding: 60px 20px; color: var(--texto-sub); font-size: 14px; }
+  .gallery-empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+
+  /* ===== LIGHTBOX ===== */
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 20px; }
+  .lightbox.active { display: flex; }
+  .lightbox-inner { max-width: 800px; width: 100%; text-align: center; position: relative; }
+  .lightbox-img { width: 100%; max-height: 70vh; border-radius: 10px; display: flex; align-items: center; justify-contentaaacenter; background: var(--card); min-height: 200px; overflow: hidden; }
+  .lightbox-close { position: absolute; top: -40px; right: 0; background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; opacity: 0.7; }
+  .lightbox-close:hover { opacity: 1; }
+  .lightbox-caption { color: var(--texto-sub); font-size: 13px; margin-top: 12px; }
+
+  /* ===== CHAT ===== */
+  .chat-container {
+    display: flex; flex-direction: column;
+    height: calc(100vh - var(--header-h) - var(--nav-h) - 56px);
+    min-height: 400px;
+    background: var(--card); border: 1px solid var(--borda); border-radius: 16px; overflow: hidden;
+  }
+  .chat-header { padding: 14px 18px; background: var(--card2); border-bottom: 1px solid var(--borda); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .chat-header-icon { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--verde), var(--verde-claro)); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .chat-header-info strong { display: block; font-size: 15px; color: var(--creme); }
+  .chat-header-info span { font-size: 12px; color: var(--verde-neon); }
+
+  .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--borda); border-radius: 2px; }
+
+  .msg-wrapper { display: flex; flex-direction: column; max-width: 75%; }
+  .msg-wrapper.me { align-self: flex-end; align-items: flex-end; }
+  .msg-wrapper.other { align-self: flex-start; align-items: flex-start; }
+  .msg-sender { font-size: 11px; color: var(--verde-claro); margin-bottom: 3px; font-weight: 600; }
+  .msg-bubble { padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.5; word-break: break-word; }
+  .msg-wrapper.me .msg-bubble { background: #1e4d1e; border-bottom-right-radius: 4px; color: var(--texto); }
+  .msg-wrapper.other .msg-bubble { background: var(--card2); border-bottom-left-radius: 4px; color: var(--texto); border: 1px solid var(--borda); }
+  .msg-time { font-size: 11px; color: var(--texto-sub); margin-top: 3px; font-family: 'DM Mono'; }
+  .msg-img { max-width: 220px; border-radius: 10px; overflow: hidden; cursor: pointer; margin-bottom: 4px; }
+  .msg-img img { width: 100%; border-radius: 10px; display: block; }
+  .date-divider { align-self: center; font-size: 11px; color: var(--texto-sub); background: var(--card); border: 1px solid var(--borda); padding: 4px 12px; border-radius: 12px; margin: 8px 0; font-family: 'DM Mono'; }
+
+  .chat-input-area { padding: 12px 14px; background: var(--card2); border-top: 1px solid var(--borda); display: flex; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+  .chat-input-wrap { flex: 1; background: var(--bg); border: 1px solid var(--borda); border-radius: 24px; display: flex; align-items: center; padding: 6px 12px; gap: 6px; transition: border-color 0.2s; }
+  .chat-input-wrap:focus-within { border-color: var(--verde-claro); }
+  #chat-input { flex: 1; background: none; border: none; outline: none; color: var(--texto); font-family: 'DM Sans', sans-serif; font-size: 14px; resize: none; max-height: 100px; padding: 4px 0; }
+  .chat-attach-btn { background: none; border: none; color: var(--texto-sub); cursor: pointer; font-size: 18px; display: flex; align-items: center; transition: color 0.2s; padding: 4px; flex-shrink: 0; }
+  .chat-attach-btn:hover { color: var(--verde-claro); }
+  .chat-send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--verde); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+  .chat-send-btn:hover { background: var(--verde-claro); transform: scale(1.05); }
+  .chat-send-btn svg { width: 18px; height: 18px; }
+
+  /* ===== ASSISTENTE IA ===== */
+  .ia-container {
+    display: flex; flex-direction: column;
+    height: calc(100vh - var(--header-h) - var(--nav-h) - 56px);
+    min-height: 400px;
+    background: var(--card); border: 1px solid var(--borda); border-radius: 16px; overflow: hidden;
+  }
+
+  .ia-header {
+    padding: 14px 18px; background: var(--card2); border-bottom: 1px solid var(--borda);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0;
+  }
+  .ia-header-left { display: flex; align-items: center; gap: 12px; }
+  .ia-header-icon {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, #4a2080, #7a40c0);
+    display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;
+  }
+  .ia-header-info strong { display: block; font-size: 15px; color: var(--creme); }
+  .ia-header-info span { font-size: 12px; color: #b57aff; }
+
+  .btn-apikey {
+    padding: 6px 12px; background: transparent;
+    border: 1px solid #4a2080; border-radius: 8px;
+    color: #b57aff; font-size: 12px; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+  }
+  .btn-apikey:hover { background: rgba(74,32,128,0.3); }
+  .btn-apikey.configured { border-color: var(--verde); color: var(--verde-neon); }
+
+  /* Barra de API Key inline */
+  .ia-apikey-bar {
+    padding: 12px 18px; background: rgba(74,32,128,0.15);
+    border-bottom: 1px solid #4a2080;
+    display: none; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .ia-apikey-bar.visible { display: flex; }
+  .ia-apikey-bar label { font-size: 12px; color: #b57aff; white-space: nowrap; }
+  .ia-apikey-bar input {
+    flex: 1; min-width: 0; padding: 8px 12px;
+    background: var(--bg); border: 1px solid #4a2080;
+    border-radius: 8px; color: var(--texto);
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .ia-apikey-bar input:focus { border-color: #b57aff; }
+  .ia-apikey-bar .btn-save-key {
+    padding: 8px 14px; background: #4a2080; color: #fff;
+    border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s; white-space: nowrap; flex-shrink: 0;
+  }
+  .ia-apikey-bar .btn-save-key:hover { background: #7a40c0; }
+  .ia-apikey-hint { font-size: 11px; color: var(--texto-sub); width: 100%; line-height: 1.5; }
+
+  .ia-messages {
+    flex: 1; overflow-y: auto; padding: 16px;
+    display: flex; flex-direction: column; gap: 16px;
+    scrollbar-width: thin; scrollbar-color: var(--borda) transparent;
+  }
+  .ia-messages::-webkit-scrollbar { width: 4px; }
+  .ia-messages::-webkit-scrollbar-thumb { background: var(--borda); border-radius: 2px; }
+
+  .ia-msg { display: flex; gap: 12px; animation: fadeUp 0.2s ease; }
+
+  .ia-avatar {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .ia-msg.user .ia-avatar { background: rgba(45,106,45,0.4); border: 1px solid var(--verde-claro); }
+  .ia-msg.ai .ia-avatar { background: linear-gradient(135deg, #4a2080, #7a40c0); }
+
+  .ia-body { flex: 1; min-width: 0; }
+  .ia-name { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .ia-msg.user .ia-name { color: var(--verde-claro); }
+  .ia-msg.ai .ia-name { color: #b57aff; }
+
+  .ia-text {
+    font-size: 14px; line-height: 1.7;
+    color: var(--texto); white-space: pre-wrap; word-break: break-word;
+    font-family: 'Crimson Pro', serif;
+  }
+
+  .ia-msg.user .ia-text {
+    background: rgba(45,106,45,0.15);
+    border-left: 3px solid var(--verde-claro);
+    padding: 10px 14px; border-radius: 0 8px 8px 0;
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+  }
+
+  .ia-thinking { display: flex; gap: 5px; align-items: center; padding: 10px 0; }
+  .ia-thinking span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #b57aff;
+    animation: bounceDot 1.2s ease-in-out infinite;
+  }
+  .ia-thinking span:nth-child(2) { animation-delay: 0.2s; }
+  .ia-thinking span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounceDot {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.3; }
+    40% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  .ia-empty {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 14px; padding: 40px 20px; text-align: center;
+  }
+  .ia-empty-icon { font-size: 52px; opacity: 0.25; }
+  .ia-empty-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; color: var(--creme); opacity: 0.5; }
+  .ia-empty-sub { font-size: 13px; color: var(--texto-sub); font-style: italic; max-width: 320px; line-height: 1.6; }
+  .ia-sugestoes { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 8px; }
+  .ia-sugestao {
+    border: 1px solid var(--borda); background: var(--card2);
+    color: #b57aff; padding: 7px 14px;
+    font-family: 'Crimson Pro', serif; font-size: 12px;
+    cursor: pointer; border-radius: 20px; transition: all 0.15s; font-style: italic;
+  }
+  .ia-sugestao:hover { background: rgba(74,32,128,0.3); border-color: #b57aff; }
+
+  .ia-input-area {
+    padding: 12px 14px; background: var(--card2); border-top: 1px solid var(--borda);
+    display: flex; align-items: flex-end; gap: 8px; flex-shrink: 0;
+  }
+  .ia-input-wrap {
+    flex: 1; background: var(--bg); border: 1px solid var(--borda);
+    border-radius: 24px; display: flex; align-items: center;
+    padding: 6px 16px; gap: 8px; transition: border-color 0.2s;
+  }
+  .ia-input-wrap:focus-within { border-color: #7a40c0; }
+  #ia-input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--texto); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; resize: none; max-height: 100px; padding: 4px 0;
+  }
+  .ia-send-btn {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: linear-gradient(135deg, #4a2080, #7a40c0);
+    border: none; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0;
+  }
+  .ia-send-btn:hover { transform: scale(1.08); }
+  .ia-send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .ia-send-btn svg { width: 18px; height: 18px; }
+  .ia-status { padding: 4px 18px 0; font-size: 12px; min-height: 20px; flex-shrink: 0; }
+
+  /* ===== UPLOAD MODAL ===== */
+  .upload-zone { border: 2px dashed var(--borda); border-radius: 12px; padding: 28px; text-align: center; margin-bottom: 16px; cursor: pointer; transition: border-color 0.2s; }
+  .upload-zone:hover { border-color: var(--verde-claro); }
+  .upload-zone.has-file { border-color: var(--verde-claro); background: rgba(45,106,45,0.08); }
+  .upload-zone p { color: var(--texto-sub); font-size: 14px; margin-top: 10px; }
+  .upload-zone .upload-icon { font-size: 36px; }
+
+  /* ===== STATUS BADGE ===== */
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge.ok { background: rgba(45,106,45,0.25); color: var(--verde-neon); }
+  .badge.err { background: rgba(200,0,0,0.15); color: #ff7070; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; }
+  .dot.g { background: var(--verde-neon); }
+  .dot.r { background: #ff5555; }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--card2); border: 1px solid var(--borda); border-radius: 10px;
+    padding: 10px 18px; font-size: 13px; color: var(--texto); z-index: 9999;
+    transition: transform 0.3s ease; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .app-content { padding: 16px 12px; }
+    .chat-container, .ia-container { height: calc(100vh - var(--header-h) - var(--nav-h) - 44px); }
+    .welcome-banner { padding: 24px; }
+    .welcome-banner h2 { font-size: 28px; }
+    .welcome-banner::before { font-size: 50px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .manuals-grid { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+    .manual-viewer { padding: 20px; }
+    .viewer-title { font-size: 26px; }
+    .header-title { font-size: 18px; letter-spacing: 2px; }
+    .nav-item { padding: 0 10px; font-size: 12px; gap: 5px; }
+    .nav-item svg { width: 14px; height: 14px; }
+  }
+
+  @media (max-width: 480px) {
+    .login-box { padding: 32px 20px; }
+    .login-title { font-size: 36px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .stat-card { padding: 14px; gap: 10px; }
+    .stat-num { font-size: 24px; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    .btn-logout { display: none; }
+    .header-patrulha-text { display: none; }
+    .chat-container, .ia-container { height: calc(100vh - var(--header-h) - var(--nav-h) - 32px); }
+    .ia-apikey-bar { padding: 10px 12px; }
+    .ia-apikey-bar label { width: 100%; }
+    .modal-box { padding: 24px 20px; }
+  }
+
+  @media (min-width: 769px) {
+    .section-inicio-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+  }
+
+  /* ===== ADMIN ===== */
+  .admin-badge {
+    display: none; align-items: center; gap: 5px;
+    background: rgba(201,168,76,0.2); border: 1px solid var(--ouro);
+    color: var(--ouro-claro); border-radius: 20px;
+    padding: 3px 10px; font-size: 11px; font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .admin-badge.visible { display: flex; }
+
+  .admin-key-group { display: none; }
+  .admin-key-group.visible { display: block; }
+  .admin-key-hint {
+    font-size: 11px; color: var(--ouro); margin-top: 6px; font-style: italic;
+  }
+
+  /* Painel de gestão */
+  .admin-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .admin-tab {
+    padding: 8px 16px; border-radius: 8px; border: 1px solid var(--borda);
+    background: var(--card2); color: var(--texto-sub); font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .admin-tab.active { background: rgba(201,168,76,0.2); border-color: var(--ouro); color: var(--ouro-claro); }
+  .admin-tab:hover:not(.active) { border-color: var(--verde-claro); color: var(--texto); }
+
+  .admin-panel { display: none; animation: fadeUp 0.25s ease both; }
+  .admin-panel.active { display: block; }
+
+  .admin-card {
+    background: var(--card); border: 1px solid var(--borda);
+    border-radius: 14px; padding: 24px; margin-bottom: 16px;
+  }
+  .admin-card h4 {
+    font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+    letter-spacing: 1.5px; color: var(--ouro-claro); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* Tabela de membros */
+  .membros-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .membros-table th {
+    text-align: left; padding: 10px 12px; color: var(--texto-sub);
+    border-bottom: 1px solid var(--borda); font-size: 11px;
+    letter-spacing: 1px; text-transform: uppercase; font-family: 'DM Mono';
+  }
+  .membros-table td { padding: 10px 12px; border-bottom: 1px solid rgba(42,63,42,0.5); vertical-align: middle; }
+  .membros-table tr:last-child td { border-bottom: none; }
+  .membros-table tr:hover td { background: var(--card2); }
+  .membro-status {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 700;
+  }
+  .membro-status.activo { background: rgba(45,106,45,0.25); color: var(--verde-neon); }
+  .membro-status.inactivo { background: rgba(100,100,100,0.2); color: var(--texto-sub); }
+  .btn-sm {
+    padding: 4px 10px; border-radius: 6px; border: 1px solid var(--borda);
+    background: transparent; color: var(--texto-sub); font-size: 11px;
+    cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-sm:hover { color: var(--texto); border-color: var(--verde-claro); }
+  .btn-sm.danger:hover { color: #ff7070; border-color: #ff5555; }
+  .btn-sm.restore:hover { color: var(--verde-neon); border-color: var(--verde-claro); }
+
+  /* Formulário de novo membro */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 540px) { .form-row { grid-template-columns: 1fr; } }
+
+  /* Filtros membros */
+  .membros-filtros { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .filtro-btn {
+    padding: 5px 12px; border-radius: 20px; border: 1px solid var(--borda);
+    background: transparent; color: var(--texto-sub); font-size: 12px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .filtro-btn.active { background: rgba(45,106,45,0.25); border-color: var(--verde-claro); color: var(--verde-neon); }
+  .membros-count { margin-left: auto; font-size: 12px; color: var(--texto-sub); font-family: 'DM Mono'; }
+
+  /* Actividades admin */
+  .activity-item .btn-del {
+    background: none; border: none; color: var(--texto-sub);
+    cursor: pointer; font-size: 14px; padding: 2px 6px;
+    border-radius: 4px; transition: color 0.15s; flex-shrink: 0;
+  }
+  .activity-item .btn-del:hover { color: #ff7070; }
+
+  /* Chave admin no login */
+  .chave-admin-divider {
+    display: flex; align-items: center; gap: 10px;
+    margin: 18px 0 14px; color: var(--ouro); font-size: 11px;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .chave-admin-divider::before, .chave-admin-divider::after {
+    content: ''; flex: 1; height: 1px; background: rgba(201,168,76,0.3);
+  }
+
+  /* Galeria e chat: botão de eliminar (admin) */
+  .gallery-item .btn-del-overlay {
+    display: none; position: absolute; top: 6px; right: 6px;
+    background: rgba(0,0,0,0.7); color: #fff; border: none;
+    border-radius: 50%; width: 28px; height: 28px;
+    font-size: 14px; cursor: pointer; align-items: center; justify-content: center;
+    transition: background 0.15s; z-index: 2;
+  }
+  body.is-admin .gallery-item .btn-del-overlay { display: flex; }
+  body.is-admin .gallery-item .btn-del-overlay:hover { background: rgba(200,0,0,0.8); }
+
+  /* Nav tab admin */
+  .nav-item.nav-admin { color: rgba(201,168,76,0.7); }
+  .nav-item.nav-admin.active { color: var(--ouro-claro); border-bottom-color: var(--ouro-claro); }
+  .nav-item.nav-admin:hover { color: var(--ouro-claro); }
+
+  /* ===== BASE DE CONHECIMENTO IA ===== */
+  .knowledge-drop {
+    border: 2px dashed var(--borda); border-radius: 12px;
+    padding: 28px 20px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--bg); position: relative;
+  }
+  .knowledge-drop:hover, .knowledge-drop.drag-over { border-color: var(--verde-claro); background: rgba(45,106,45,0.08); }
+  .knowledge-drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+  .knowledge-drop-icon { font-size: 36px; margin-bottom: 8px; }
+  .knowledge-drop p { font-size: 13px; color: var(--texto-sub); margin: 0; }
+  .knowledge-drop strong { color: var(--verde-neon); }
+
+  .knowledge-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+  .knowledge-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 16px; background: var(--bg);
+    border: 1px solid var(--borda); border-radius: 10px;
+    transition: border-color 0.2s;
+  }
+  .knowledge-item:hover { border-color: var(--verde-claro); }
+  .knowledge-item-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+  .knowledge-item-info { flex: 1; min-width: 0; }
+  .knowledge-item-name { font-size: 14px; font-weight: 600; color: var(--creme); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .knowledge-item-meta { font-size: 12px; color: var(--texto-sub); font-family: 'DM Mono'; }
+  .knowledge-item .btn-del { background: none; border: none; color: var(--texto-sub); cursor: pointer; font-size: 16px; padding: 4px 6px; border-radius: 6px; flex-shrink: 0; transition: color 0.15s; }
+  .knowledge-item .btn-del:hover { color: #ff7070; }
+
+  .knowledge-progress { margin-top: 10px; display: none; }
+  .knowledge-progress-bar { height: 4px; background: var(--borda); border-radius: 2px; overflow: hidden; margin-top: 6px; }
+  .knowledge-progress-fill { height: 100%; background: var(--verde-claro); border-radius: 2px; transition: width 0.3s; }
+  .knowledge-progress-text { font-size: 12px; color: var(--texto-sub); font-family: 'DM Mono'; }
+
+  .knowledge-stats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .knowledge-stat { background: var(--bg); border: 1px solid var(--borda); border-radius: 8px; padding: 10px 16px; font-size: 13px; color: var(--texto-sub); }
+  .knowledge-stat strong { color: var(--verde-neon); font-family: 'DM Mono'; }
+
+  .textarea-knowledge { width: 100%; min-height: 120px; padding: 12px; background: var(--bg); border: 1px solid var(--borda); border-radius: 8px; color: var(--texto); font-family: 'DM Sans', sans-serif; font-size: 13px; resize: vertical; outline: none; transition: border-color 0.2s; }
+  .textarea-knowledge:focus { border-color: var(--verde-claro); }
+
+  .ia-context-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: rgba(45,106,45,0.2); border: 1px solid rgba(94,255,94,0.3); color: var(--verde-neon); margin-bottom: 12px; }
+
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="login-screen">
+  <div class="login-bg"></div>
+  <div class="login-trees"></div>
+  <div class="login-box">
+    <div class="scout-emblem">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="38" stroke="#2d6a2d" stroke-width="2"/>
+        <polygon points="40,8 48,28 70,28 53,42 60,62 40,50 20,62 27,42 10,28 32,28" fill="none" stroke="#4a9e4a" stroke-width="2"/>
+        <circle cx="40" cy="40" r="8" fill="#2d6a2d"/>
+        <circle cx="40" cy="40" r="4" fill="#5eff5e"/>
+        <path d="M40,18 C40,18 36,24 36,28 C36,32 40,32 40,32 C40,32 44,32 44,28 C44,24 40,18 40,18Z" fill="#c9a84c" opacity="0.9"/>
+        <path d="M40,62 C40,62 36,56 36,52 C36,48 40,48 40,48 C40,48 44,48 44,52 C44,56 40,62 40,62Z" fill="#c9a84c" opacity="0.9"/>
+        <path d="M18,40 C18,40 24,36 28,36 C32,36 32,40 32,40 C32,40 32,44 28,44 C24,44 18,40 18,40Z" fill="#c9a84c" opacity="0.9"/>
+        <path d="M62,40 C62,40 56,36 52,36 C48,36 48,40 48,40 C48,40 48,44 52,44 C56,44 62,40 62,40Z" fill="#c9a84c" opacity="0.9"/>
+      </svg>
+    </div>
+    <div class="login-title">ESCADO</div>
+    <div class="login-subtitle">Agrupamento 06 · Portal Oficial</div>
+    <button class="enter-btn" onclick="startLogin()">⚜️ Entrar no Portal</button>
+    <div class="login-footer">Escoteiros Católicos do Dondo · Paróquia Santa Ana</div>
+  </div>
+</div>
+
+<!-- MODAL PERFIL -->
+<div class="modal-overlay" id="profile-modal">
+  <div class="modal-box">
+    <h3>Identificação</h3>
+    <p>Preencha os seus dados para continuar</p>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="inp-email" placeholder="o.seu@email.com" maxlength="80" autocomplete="email"/>
+    </div>
+    <div class="form-group">
+      <label>Nome Completo</label>
+      <input type="text" id="inp-name" placeholder="O seu nome" maxlength="60"/>
+    </div>
+    <div class="form-group">
+      <label>Patrulha / Unidade</label>
+      <select id="inp-patrulha">
+        <option value="">Selecione a sua patrulha</option>
+        <option>Patrulha Leão</option>
+        <option>Patrulha Águia</option>
+        <option>Patrulha Lobo</option>
+        <option>Patrulha Cobra</option>
+        <option>Dirigente</option>
+        <option>Convidado</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Função</label>
+      <select id="inp-role" onchange="onRoleChange(this.value)">
+        <option value="">Selecione</option>
+        <option>Escuteiro</option>
+        <option>Sénior</option>
+        <option>Chefe de Patrulha</option>
+        <option>Chefe de Agrupamento</option>
+        <option>Assistente de Agrupamento</option>
+        <option>Secretário</option>
+        <option>Tesoureiro</option>
+      </select>
+    </div>
+
+    <!-- Campo de chave admin — aparece só para Chefes -->
+    <div id="admin-key-group" class="admin-key-group">
+      <div class="chave-admin-divider">🔑 Acesso de Administrador</div>
+      <div class="form-group">
+        <label>Chave de Administrador</label>
+        <input type="password" id="inp-admin-key" placeholder="Insira a chave secreta..." autocomplete="off"/>
+        <div class="admin-key-hint">⚠️ Deixe em branco para entrar apenas com leitura</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="finishSetup()">Entrar no Portal →</button>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div class="lightbox-inner" onclick="event.stopPropagation()">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <div class="lightbox-img" id="lightbox-img"></div>
+    <div class="lightbox-caption" id="lightbox-caption"></div>
+  </div>
+</div>
+
+<!-- MODAL UPLOAD GALERIA -->
+<div class="modal-overlay" id="gallery-upload-modal">
+  <div class="modal-box">
+    <h3>Adicionar Foto</h3>
+    <p>Partilhe momentos do grupo</p>
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('gallery-file-input').click()">
+      <div class="upload-icon" id="upload-icon">📁</div>
+      <p id="upload-zone-text">Clique para selecionar uma imagem</p>
+      <input type="file" id="gallery-file-input" accept="image/*" style="display:none" onchange="handleGalleryUpload(event)"/>
+    </div>
+    <div class="form-group">
+      <label>Legenda</label>
+      <input type="text" id="gallery-caption-inp" placeholder="Descreva a foto..." maxlength="80"/>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-primary" style="background:var(--card2);border:1px solid var(--borda)" onclick="closeModal('gallery-upload-modal')">Cancelar</button>
+      <button class="btn-primary" onclick="confirmGalleryUpload()">Publicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== APP ===== -->
+<div id="app">
+  <header class="app-header">
+    <div class="header-logo">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="15" stroke="#2d6a2d" stroke-width="1.5"/>
+        <path d="M16,4 C16,4 13,9 13,12 C13,15 16,15 16,15 C16,15 19,15 19,12 C19,9 16,4 16,4Z" fill="#c9a84c"/>
+        <path d="M16,28 C16,28 13,23 13,20 C13,17 16,17 16,17 C16,17 19,17 19,20 C19,23 16,28 16,28Z" fill="#c9a84c"/>
+        <path d="M4,16 C4,16 9,13 12,13 C15,13 15,16 15,16 C15,16 15,19 12,19 C9,19 4,16 4,16Z" fill="#c9a84c"/>
+        <path d="M28,16 C28,16 23,13 20,13 C17,13 17,16 17,16 C17,16 17,19 20,19 C23,19 28,16 28,16Z" fill="#c9a84c"/>
+        <circle cx="16" cy="16" r="3" fill="#5eff5e"/>
+      </svg>
+      <span class="header-title">ESCADO</span>
+    </div>
+    <div class="header-right">
+      <span class="admin-badge" id="admin-badge">⚜️ ADMIN</span>
+      <span class="header-patrulha-text" style="font-size:13px;color:var(--texto-sub)" id="header-patrulha"></span>
+      <div class="user-avatar" id="user-avatar">?</div>
+      <button class="btn-logout" onclick="logout()">Sair</button>
+    </div>
+  </header>
+
+  <nav class="app-nav">
+    <div class="nav-item active" onclick="showSection('inicio')">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5L1 7h2v7h4v-4h2v4h4V7h2L8 1.5z"/></svg>
+      Início
+    </div>
+    <div class="nav-item" onclick="showSection('manuais')">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1zm1 2v8h8V4H4zm1 1h6v1H5V5zm0 2h6v1H5V7zm0 2h4v1H5V9z"/></svg>
+      Manuais
+    </div>
+    <div class="nav-item" onclick="showSection('galeria')">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 3a1 1 0 011-1h12a1 1 0 011 1v10a1 1 0 01-1 1H2a1 1 0 01-1-1V3zm1 0v6l3-2 4 5 2-2 2 2V3H2z"/></svg>
+      Galeria
+    </div>
+    <div class="nav-item" onclick="showSection('chat')">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v8H9l-3 2.5V11H2V3zm1 1v6h3v1.5L8.5 10H13V4H3z"/></svg>
+      Chat
+    </div>
+    <div class="nav-item" id="nav-ia" onclick="showSection('ia')">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM6.5 7a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm-2 0a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm6 0a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z"/></svg>
+      IA
+    </div>
+    <div class="nav-item nav-admin" id="nav-gestao" style="display:none" onclick="showSection('gestao')">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 00-1 1v.5A5.5 5.5 0 002.5 8 5.5 5.5 0 008 13.5 5.5 5.5 0 0013.5 8 5.5 5.5 0 009 2.5V2a1 1 0 00-1-1zm0 3a3.5 3.5 0 110 7 3.5 3.5 0 010-7zm0 1.5a2 2 0 100 4 2 2 0 000-4z"/></svg>
+      Gestão
+    </div>
+  </nav>
+
+  <main class="app-content">
+
+    <!-- INÍCIO -->
+    <div class="section active" id="section-inicio">
+      <div class="welcome-banner">
+        <h2 id="welcome-msg">Bem-vindo ao Portal</h2>
+        <p>Semper Paratus — esteja sempre preparado. Aqui encontra tudo do Agrupamento 06, Paróquia Santa Ana do Dondo.</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon">👤</div><div><div class="stat-num">90</div><div class="stat-label">Membros registados</div></div></div>
+        <div class="stat-card"><div class="stat-icon">📖</div><div><div class="stat-num">6</div><div class="stat-label">Manuais</div></div></div>
+        <div class="stat-card"><div class="stat-icon">📸</div><div><div class="stat-num" id="photo-count">6</div><div class="stat-label">Fotografias</div></div></div>
+        <div class="stat-card"><div class="stat-icon">🏕️</div><div><div class="stat-num">3</div><div class="stat-label">Acampamentos</div></div></div>
+      </div>
+      <div class="section-heading">Atividades Recentes</div>
+      <div class="activity-feed" id="activity-feed-main">
+        <div class="activity-item"><div class="activity-dot"></div><div class="activity-text">Retiro de Formação Escutista realizado em <strong>agosto 2023</strong> — Bairro de Mafarinha</div><div class="activity-time">ago 2023</div></div>
+        <div class="activity-item"><div class="activity-dot yellow"></div><div class="activity-text">Regulamento Interno revisto em <strong>outubro 2022</strong></div><div class="activity-time">out 2022</div></div>
+        <div class="activity-item"><div class="activity-dot"></div><div class="activity-text">Lista nominal 2023 — <strong>~90 membros</strong> registados</div><div class="activity-time">jun 2023</div></div>
+        <div class="activity-item"><div class="activity-dot brown"></div><div class="activity-text">Assistente IA ESCADO disponível no portal</div><div class="activity-time">Agora</div></div>
+      </div>
+    </div>
+
+    <!-- MANUAIS -->
+    <div class="section" id="section-manuais">
+      <div class="manuals-list" id="manuals-list">
+        <div class="section-heading">Biblioteca de Manuais</div>
+        <div class="manuals-grid" id="manuals-grid"></div>
+      </div>
+      <div class="manual-viewer" id="manual-viewer">
+        <div class="viewer-back" onclick="closeViewer()">← Voltar para Manuais</div>
+        <div class="viewer-tag" id="viewer-tag"></div>
+        <div class="viewer-title" id="viewer-title"></div>
+        <div class="viewer-body" id="viewer-body"></div>
+      </div>
+    </div>
+
+    <!-- GALERIA -->
+    <div class="section" id="section-galeria">
+      <div class="gallery-toolbar">
+        <div class="section-heading" style="margin-bottom:0">Galeria do Grupo</div>
+        <button class="btn-upload" onclick="openModal('gallery-upload-modal')">
+          <svg viewBox="0 0 16 16" fill="currentColor" width="15" height="15"><path d="M7 1v8H5l3 4 3-4H9V1H7zm-4 12v2h10v-2H3z"/></svg>
+          Adicionar Foto
+        </button>
+      </div>
+      <div class="gallery-grid" id="gallery-grid"></div>
+    </div>
+
+    <!-- CHAT DO GRUPO -->
+    <div class="section" id="section-chat">
+      <div class="chat-container">
+        <div class="chat-header">
+          <div class="chat-header-icon">⛺</div>
+          <div class="chat-header-info">
+            <strong>ESCADO — Agrupamento 06</strong>
+            <span>● Chat do grupo</span>
+          </div>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-area">
+          <div class="chat-input-wrap">
+            <label class="chat-attach-btn" title="Enviar foto">
+              📎
+              <input type="file" accept="image/*" style="display:none" onchange="sendChatImage(event)"/>
+            </label>
+            <textarea id="chat-input" rows="1" placeholder="Digite uma mensagem..." onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+          </div>
+          <button class="chat-send-btn" onclick="sendMessage()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASSISTENTE IA -->
+    <div class="section" id="section-ia">
+      <div class="ia-container">
+        <div class="ia-header">
+          <div class="ia-header-left">
+            <div class="ia-header-icon">⚜️</div>
+            <div class="ia-header-info">
+              <strong>Assistente ESCADO</strong>
+              <span>● Powered by Gemini · Google AI</span>
+            </div>
+          </div>
+          <button class="btn-apikey" id="btn-apikey" onclick="toggleApiKeyBar()">🔑 Chave API</button>
+        </div>
+        <!-- Barra de configuração da chave API -->
+        <div class="ia-apikey-bar" id="ia-apikey-bar">
+          <label>🔑 Chave API Google:</label>
+          <input type="password" id="ia-apikey-inp" placeholder="AIzaSy..." autocomplete="off"/>
+          <button class="btn-save-key" onclick="saveApiKey()">Guardar</button>
+          <div class="ia-apikey-hint">
+            Obtenha a sua chave em <strong>aistudio.google.com</strong> → Get API Key. É gratuito. A chave é guardada localmente neste dispositivo.
+          </div>
+        </div>
+        <div class="ia-status" id="ia-status"></div>
+        <div class="ia-messages" id="ia-messages">
+          <div class="ia-empty" id="ia-empty">
+            <div class="ia-empty-icon">⚜️</div>
+            <div class="ia-empty-title">Assistente ESCADO</div>
+            <div class="ia-empty-sub">Faça uma pergunta sobre o Agrupamento 06, regulamentos, estatutos, membros ou atividades escuteiras.</div>
+            <div class="ia-sugestoes">
+              <span class="ia-sugestao" onclick="iaPerRapida('Quais são os ramos do ESCADO?')">Quais são os ramos?</span>
+              <span class="ia-sugestao" onclick="iaPerRapida('Quais são as regras de acampamento?')">Regras de acampamento</span>
+              <span class="ia-sugestao" onclick="iaPerRapida('Quem são os membros da lista nominal?')">Lista de membros</span>
+              <span class="ia-sugestao" onclick="iaPerRapida('Quais são os valores do método escutista?')">Valores escutistas</span>
+              <span class="ia-sugestao" onclick="iaPerRapida('O que foi o Retiro de Formação de 2023?')">Retiro 2023</span>
+            </div>
+          </div>
+        </div>
+        <div class="ia-input-area">
+          <div class="ia-input-wrap">
+            <textarea id="ia-input" rows="1" placeholder="Pergunte sobre o ESCADO..." onkeydown="iaHandleKey(event)" oninput="autoResize(this)"></textarea>
+          </div>
+          <button class="ia-send-btn" id="ia-send-btn" onclick="iaEnviar()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GESTÃO (apenas admin) -->
+    <div class="section" id="section-gestao">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+        <div class="section-heading" style="margin-bottom:0">Painel de Gestão</div>
+        <span style="background:rgba(201,168,76,0.15);border:1px solid var(--ouro);color:var(--ouro-claro);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">⚜️ ACESSO ADMINISTRADOR</span>
+      </div>
+
+      <!-- Tabs -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="showAdminPanel('membros', this)">👥 Membros</button>
+        <button class="admin-tab" onclick="showAdminPanel('actividades', this)">📋 Atividades</button>
+        <button class="admin-tab" onclick="showAdminPanel('ia-knowledge', this)">🧠 Base IA</button>
+        <button class="admin-tab" onclick="showAdminPanel('seguranca', this)">🔑 Segurança</button>
+      </div>
+
+      <!-- Painel: Membros -->
+      <div class="admin-panel active" id="admin-membros">
+        <div class="admin-card">
+          <h4>➕ Adicionar Membro</h4>
+          <div class="form-row">
+            <div class="form-group" style="margin-bottom:0">
+              <label>Nome Completo</label>
+              <input type="text" id="novo-nome" placeholder="Nome do membro" maxlength="60"/>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Patrulha</label>
+              <select id="novo-patrulha">
+                <option value="">Selecione</option>
+                <option>Patrulha Leão</option>
+                <option>Patrulha Águia</option>
+                <option>Patrulha Lobo</option>
+                <option>Patrulha Cobra</option>
+                <option>Dirigente</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row" style="margin-top:12px">
+            <div class="form-group" style="margin-bottom:0">
+              <label>Função</label>
+              <select id="novo-funcao">
+                <option>Escuteiro</option>
+                <option>Sénior</option>
+                <option>Chefe de Patrulha</option>
+                <option>Chefe de Agrupamento</option>
+                <option>Assistente de Agrupamento</option>
+                <option>Secretário</option>
+                <option>Tesoureiro</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Ano de Entrada</label>
+              <input type="number" id="novo-ano" placeholder="2025" min="2000" max="2099"/>
+            </div>
+          </div>
+          <button class="btn-primary" style="margin-top:16px;width:auto;padding:10px 24px" onclick="adicionarMembro()">Adicionar Membro</button>
+        </div>
+
+        <div class="admin-card">
+          <h4>👥 Lista de Membros</h4>
+          <div class="membros-filtros">
+            <button class="filtro-btn active" onclick="filtrarMembros('todos', this)">Todos</button>
+            <button class="filtro-btn" onclick="filtrarMembros('activo', this)">Activos</button>
+            <button class="filtro-btn" onclick="filtrarMembros('inactivo', this)">Arquivados</button>
+            <span class="membros-count" id="membros-count"></span>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="membros-table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Patrulha</th>
+                  <th>Função</th>
+                  <th>Ano</th>
+                  <th>Estado</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="membros-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Painel: Atividades -->
+      <div class="admin-panel" id="admin-actividades">
+        <div class="admin-card">
+          <h4>➕ Nova Atividade</h4>
+          <div class="form-row">
+            <div class="form-group" style="margin-bottom:0">
+              <label>Descrição</label>
+              <input type="text" id="nova-act-texto" placeholder="Ex: Acampamento de Páscoa..." maxlength="100"/>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Data</label>
+              <input type="text" id="nova-act-data" placeholder="Ex: abr 2025" maxlength="20"/>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:12px;margin-bottom:0">
+            <label>Cor do ponto</label>
+            <select id="nova-act-cor">
+              <option value="verde">🟢 Verde — Actividade realizada</option>
+              <option value="yellow">🟡 Amarelo — Evento especial</option>
+              <option value="brown">🟤 Castanho — Novidade</option>
+            </select>
+          </div>
+          <button class="btn-primary" style="margin-top:16px;width:auto;padding:10px 24px" onclick="adicionarActividade()">Adicionar Atividade</button>
+        </div>
+        <div class="admin-card">
+          <h4>📋 Atividades Recentes</h4>
+          <div class="activity-feed" id="admin-activity-feed"></div>
+        </div>
+      </div>
+
+      <!-- Painel: Base de Conhecimento IA -->
+      <div class="admin-panel" id="admin-ia-knowledge">
+
+        <div class="admin-card">
+          <h4>📄 Carregar PDF ou Documento</h4>
+          <p style="font-size:13px;color:var(--texto-sub);margin-bottom:14px;line-height:1.6">
+            A IA lê automaticamente o conteúdo de cada documento e usa-o para responder perguntas. Suporta PDF, TXT e conteúdo colado.
+          </p>
+          <div class="knowledge-drop" id="knowledge-drop"
+               ondragover="event.preventDefault();this.classList.add('drag-over')"
+               ondragleave="this.classList.remove('drag-over')"
+               ondrop="handleKnowledgeDrop(event)">
+            <input type="file" accept=".pdf,.txt" onchange="handleKnowledgeFile(event)" multiple/>
+            <div class="knowledge-drop-icon">📂</div>
+            <p><strong>Arraste ficheiros aqui</strong> ou clique para selecionar</p>
+            <p style="margin-top:4px;font-size:11px">PDF e TXT · Máx. 10 MB por ficheiro</p>
+          </div>
+          <div class="knowledge-progress" id="knowledge-progress">
+            <div class="knowledge-progress-text" id="knowledge-progress-text">A extrair texto...</div>
+            <div class="knowledge-progress-bar"><div class="knowledge-progress-fill" id="knowledge-progress-fill" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <h4>✏️ Adicionar Texto Manualmente</h4>
+          <p style="font-size:13px;color:var(--texto-sub);margin-bottom:12px">Cole um excerto de manual, regulamento, ata de reunião ou qualquer texto que a IA deva conhecer.</p>
+          <div class="form-group">
+            <label>Título do documento</label>
+            <input type="text" id="knowledge-title" placeholder="Ex: Ata da Reunião de Abril 2025" maxlength="80"/>
+          </div>
+          <div class="form-group">
+            <label>Conteúdo</label>
+            <textarea class="textarea-knowledge" id="knowledge-text" placeholder="Cole ou escreva o texto aqui..."></textarea>
+          </div>
+          <button class="btn-primary" style="width:auto;padding:10px 24px" onclick="addKnowledgeText()">Adicionar à Base IA</button>
+        </div>
+
+        <div class="admin-card">
+          <h4>🧠 Documentos na Base de Conhecimento</h4>
+          <div class="knowledge-stats">
+            <div class="knowledge-stat">Documentos: <strong id="k-count">0</strong></div>
+            <div class="knowledge-stat">Total de caracteres: <strong id="k-chars">0</strong></div>
+            <div class="knowledge-stat">Manuais do portal: <strong id="k-manuais">0</strong> (automático)</div>
+          </div>
+          <div id="knowledge-list" class="knowledge-list">
+            <div style="text-align:center;padding:24px;color:var(--texto-sub);font-size:13px">Nenhum documento adicionado ainda.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Painel: Segurança -->
+      <div class="admin-panel" id="admin-seguranca">
+        <div class="admin-card">
+          <h4>🔑 Alterar Chave de Administrador</h4>
+          <p style="font-size:13px;color:var(--texto-sub);margin-bottom:16px;line-height:1.6">
+            A chave actual continua a funcionar até ser substituída. Partilhe a nova chave apenas com os Chefes de Agrupamento.
+          </p>
+          <div class="form-group">
+            <label>Chave Actual</label>
+            <input type="password" id="chave-atual" placeholder="Chave actual..." autocomplete="off"/>
+          </div>
+          <div class="form-group">
+            <label>Nova Chave</label>
+            <input type="password" id="chave-nova" placeholder="Mínimo 6 caracteres..." autocomplete="off"/>
+          </div>
+          <div class="form-group">
+            <label>Confirmar Nova Chave</label>
+            <input type="password" id="chave-confirma" placeholder="Repita a nova chave..." autocomplete="off"/>
+          </div>
+          <button class="btn-primary" style="width:auto;padding:10px 24px" onclick="alterarChaveAdmin()">Alterar Chave</button>
+        </div>
+        <div class="admin-card">
+          <h4>ℹ️ Informações de Acesso</h4>
+          <div style="font-size:13px;color:var(--texto-sub);line-height:2">
+            <div>👤 <strong style="color:var(--texto)">Utilizador actual:</strong> <span id="info-user-nome"></span></div>
+            <div>🎖️ <strong style="color:var(--texto)">Função:</strong> <span id="info-user-role"></span></div>
+            <div>⚜️ <strong style="color:var(--texto)">Modo:</strong> <span style="color:var(--ouro-claro)">Administrador</span></div>
+            <div>📅 <strong style="color:var(--texto)">Sessão desde:</strong> <span id="info-sessao"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ===== LOCALSTORE KEYS =====
+const LS_USER      = 'escado_user';
+const LS_GALLERY   = 'escado_gallery';
+const LS_CHAT      = 'escado_chat';
+const LS_APIKEY    = 'escado_apikey';
+const LS_MEMBROS   = 'escado_membros';
+const LS_ACTIVS    = 'escado_actividades';
+const LS_ADMINKEY  = 'escado_adminkey_hash';
+const LS_KNOWLEDGE = 'escado_knowledge';
+
+// Hash SHA-256 da chave padrão: "ESCADO2025"
+// Pode ser alterada no painel de Gestão → Segurança
+const DEFAULT_ADMIN_HASH = '7f3b9e2a1d4c6f8e0b5a7c9d2e4f1a3b6c8d0e2f4a6b8c0d2e4f6a8b0c2d4e6f';
+
+// ===== DADOS DO GRUPO =====
+const CONTEUDO_ESCADO = `
+=== ESCOTEIROS CATÓLICOS DO DONDO (ESCADO) — AGRUPAMENTO 06 ===
+Paróquia Santa Ana do Dondo, Sofala, Moçambique.
+
+=== RAMOS / SECÇÕES ===
+• Lobitos (Lobinhos): 6–10 anos
+• Escuteiros (Scouts): 11–15 anos
+• Pioneiros (Rovers/Seniores): 16–20 anos
+• Dirigentes (Chefes): 21+ anos
+
+=== ESTRUTURA DO CONSELHO COORDENADOR ===
+I. Chefe de Agrupamento
+II. Chefe de Agrupamento Adjunto
+III. Assistente de Agrupamento
+IV. Secretário de Agrupamento
+V. Tesoureiro de Agrupamento
+VI. Chefe de cada Unidade
+VII. Chefe Adjunto de cada Unidade
+VIII. Instrutores e/ou Assessores
+
+=== REQUISITOS PARA SER MEMBRO ===
+- Ter a idade correspondente à secção desejada
+- Desejar, de livre vontade, ser Escuteiro
+- Autorização por escrito dos pais ou responsáveis (menores)
+- Parecer médico sobre compatibilidade de saúde com as atividades
+- Professar a fé católica (ou estar em disposição de se preparar)
+
+=== REQUISITOS PARA DIRIGENTES ===
+- Idade igual ou superior a 18 anos
+- Bom comportamento moral e cívico
+- Professar e praticar a fé católica
+- Sólida formação moral e religiosa
+- Frequência e aproveitamento do percurso formativo inicial do ECM
+
+=== MANDATOS ===
+- Duração de 3 anos, renováveis
+- Sem remuneração pelo exercício de cargos eletivos
+- A cessação de mandato ocorre por: término, renúncia, incapacidade física/mental, ou sanção disciplinar
+
+=== ESTATUTO — CAPÍTULOS PRINCIPAIS ===
+Capítulo I: Disposições Gerais
+- Art.1: Denominação e Fins — formação de jovens com base nos princípios e valores do escutismo católico
+- Art.2: Sede — Sofala, Paróquia São João Baptista de Matacuane
+- Art.3: Princípios — amor a Deus, pátria, família e próximo; honestidade, lealdade, responsabilidade, respeito, solidariedade e serviço
+
+Capítulo II: Dos Escuteiros
+- Art.4: Admissão — processo definido pela liderança
+- Art.5: Ramos organizados por faixas etárias
+- Art.6: Direitos e Deveres — participar em atividades, receber formação, expressar opinião; cumprir regras, respeitar líderes e membros
+
+Capítulo III: Da Liderança
+- Art.7: Composição — chefe de grupo, chefes de ramo; adultos maiores de 21 anos
+- Art.8: Responsabilidades — coordenar atividades, formar e orientar escuteiros, assegurar normas
+- Art.9: Eleição e Mandato — periódica, com avaliação e aprovação
+
+Capítulo IV: Das Atividades
+- Art.10: Programa educativo baseado nas atividades escutistas
+- Art.11: Acampamentos e atividades ao ar livre com supervisão adequada
+- Art.12: Participação em eventos regionais, nacionais e internacionais
+
+=== REGRAS DE ACAMPAMENTO ===
+1. Seguir orientações dos líderes — Penalidade: advertência verbal
+2. Respeitar a natureza e deixar o local limpo — Penalidade: serviço de limpeza
+3. Conduta segura em todas as atividades — Penalidade: afastamento temporário
+4. Preparado para emergências com conhecimento de primeiros socorros
+5. Respeitar espaço e privacidade dos outros
+6. Cumprir horários de refeições, atividades e descanso
+7. Proibido uso de substâncias ilícitas ou álcool — Penalidade: afastamento imediato e notificação aos responsáveis
+8. Cuidar dos equipamentos — Penalidade: reposição ou reparação
+9. Não abandonar o acampamento sem permissão
+10. Seguir regras de segurança em fogueiras
+Proibido namoro ou demonstrações de intimidade durante acampamentos
+
+=== TOQUES DE APITO ===
+1. Toque de reunir: interromper atividades e dirigir-se ao ponto de encontro
+2. Toque de silêncio: manter silêncio para reflexão ou concentração
+3. Toque de emergência: seguir imediatamente as instruções dos líderes
+
+=== MÉTODO ESCUTISTA ===
+Sistema de autoeducação progressiva através de:
+• Lei e Promessa
+• Aprender fazendo
+• Progresso pessoal
+• Sistema de Patrulhas
+• Relação Educativa
+• Mística e Simbologia
+• Vida na Natureza
+• Envolvimento na Comunidade
+
+=== REGULAMENTO INTERNO (ESCADO) ===
+Aprovado em Junho de 2021 e revisto em outubro de 2022. Entrou em vigor em 28 de janeiro de 2023.
+Art.1 — Valores e Conduta: honestidade, respeito, responsabilidade; igualdade e não discriminação.
+Art.2 — Segurança e Bem-Estar: seguir medidas de segurança; manter-se saudável; conhecer primeiros socorros.
+Art.3 — Desenvolvimento Pessoal: autoaperfeiçoamento; metas pessoais; iniciativa e responsabilidade.
+Art.4 — Responsabilidade Social: serviços voluntários; promoção da paz; valorizar a história e cultura de Moçambique.
+Art.5 — Respeito pela Natureza: uso consciente de recursos; conhecer fauna e flora locais.
+Art.9 — Saúde e Bem-Estar: hábitos saudáveis; evitar tabaco, álcool e drogas; aprender primeiros socorros.
+Art.22 — Honestidade e Integridade: ser honesto em todas as situações; cumprir compromissos.
+
+=== INTEGRAÇÃO NO MOVIMENTO ESCUTISTA ===
+- Membro da Organização Mundial do Movimento Escutista
+- Membro da Conferência Internacional Católica do Escutismo
+- Membro da Associação dos Escoteiros de Moçambique
+
+=== NÃO IDENTIFICAÇÃO POLÍTICO-PARTIDÁRIA ===
+O ESCADO não se identifica com qualquer ideologia político-partidária. Não é permitido usar o uniforme em manifestações políticas.
+
+=== LISTA NOMINAL 2023 — AGRUPAMENTO 06 ===
+Aaron Titos, Adelaide Benito, Adriel Titos, Alberrto Afonso, Albertinjo Da Rosa, Alberto Francisco, Albino Timbe, Alexandre Pristley, Alvaro, Alzira Luis, Amodino, Amorgado, Ana Paula Fernando Raimundo, Anaxime Pedro, Anita Domingos Mulandenza, Arlindo Chave, Balbina, Belmiro Augusto, Belo, Bento Geraldo, Bruno Pedro José, Caetano Ferreira, Carlitos Esebio, Carlos De Jesus, Carol Tome Wisck, Catija José, Celestino, Celso Xavier, Cleusio Rachide, Cristo Manuel, Dercio Laurindo, Dias Ferreira, Domingos Fernando, Elias Fernando, Elsa Fastudo, Emerson Alberto Afonso, Estêvão Duarte, Euclides Aboo, Fatima Forquia, Felisbertro Sebastiao, Fernando Alexandre, Filomena Luis Nkulazina, Francisca Jeregua, Francisca Rapouso, Francisco, Francisco Joaquim Vontade, Francisco Tomas, Fredson Ernesto Júlio, George Geronimo, Giovanna Da Rosa, Helena Ferreira, Jaime Joao Ferreira, Joana Machado, Joao, João Chico, Joaquim Forquia, Joaquim Messias, Jose Amaral, Jose Gary Keyzel, Jose Gore, Jose Luis, Júlia De Isabel Joao, Julio Joaquim, Limpo Quisito, Lino Luis, Lorenco Tomicene, Louris Valdemir, Lúcia Chico, Ludmila Titos, Madalena João, Manuel Dos Santos, Manuel Ferreira, Marcelino Vasco Nkulazina, Marlene José, Matias Verniz, Menu, Miguel, Munir Muquissirima, Nélia José, Nelson Will Wilson, Nota Jose, Oldumar Ernesto, Oldumarernest Julio, Paulino Tenis Botao, Pereira António, Restelino Eliseu Xavier, Rodrigues Pedro Jose, Rogerio Jose Simao, Rosa Jose, Rosa Tenis Botao, Rosario Mario, Sindik Jose, Soares Jose, Sofia Ferreira, Sousa Francisco, Teresa Luis Nkulazina, Tomas Samuel Joao Trabalho, Veronica Mavaela, Wisck Tome.
+Total aproximado: ~90 membros registados em Junho de 2023.
+
+=== INFORME — RETIRO DE FORMAÇÃO 2023 ===
+O Grupo dos Escuteiros Católicos do Dondo realizou um Retiro de Formação Escutista na Residência da Sra. Rosa Fernando Ténis Botão, Bairro de Mafarinha, Unidade Comunal H, Quarteirão N.º 3, Casa 1874, entre os dias 25 a 27 de agosto de 2023.
+Entrada: sexta-feira às 20h. Saída: domingo às 17h.
+Assinado por: Oldumar Ernesto Júlio (Responsável), Manuel Joao Ferreira (Chefe do Campo), Ana Paula Raimundo (Secretária).
+
+=== ANIMAÇÃO DA FÉ ===
+O ESCADO orienta a sua ação pelos valores espirituais do Escutismo, iluminados pela fé católica. Os dirigentes devem zelar para que os Escuteiros participem na celebração eucarística dominical, inclusive nas atividades de campo.
+`.trim();
+
+// ===== DADOS PADRÃO =====
+const DEFAULT_GALLERY = [
+  { id:1, emoji:'🏕️', label:'Acampamento — Agrupamento 06' },
+  { id:2, emoji:'🌲', label:'Trilha na natureza' },
+  { id:3, emoji:'🔥', label:'Noite de fogueira' },
+  { id:4, emoji:'🪢', label:'Treino de nós escutistas' },
+  { id:5, emoji:'⛅', label:'Amanhecer no campo' },
+  { id:6, emoji:'🙏', label:'Celebração eucarística no campo' },
+];
+
+const DEFAULT_CHAT = [
+  { id:1, sender:'Ana Paula Raimundo', text:'Boa tarde a todos! 👋 Lembrança: missa dominical às 8h.', time:'09:00', me:false },
+  { id:2, sender:'Oldumar Ernesto', text:'Obrigado! Confirmado. Patrulha Leão presente!', time:'09:05', me:false },
+  { id:3, sender:'Manuel Ferreira', text:'Próximo treino de nós sábado às 15h na sede.', time:'09:12', me:false },
+];
+
+const manuais = [
+  { id:1, emoji:'🏕️', tag:'SOBREVIVÊNCIA', color:'linear-gradient(135deg,#1a3a1a,#2d6a2d)', title:'Manual de Acampamento e Sobrevivência', desc:'Técnicas essenciais para montar acampamentos, orientação na natureza e sobrevivência ao ar livre.', nivel:'Intermediário', conteudo:`<h3>1. Escolha do Local</h3><p>Procure terrenos planos, protegidos do vento e distantes de cursos d'água (pelo menos 60 metros).</p><ul><li>Terreno levemente inclinado para drenagem</li><li>Presença de árvores para sombra</li><li>Distância segura de penhascos</li></ul><div class="tip-box">💡 <strong>Dica:</strong> Sempre inspecione o solo antes de montar a barraca.</div><h3>2. Fogo Seguro</h3><p>Construa a fogueira com pedras ao redor, a pelo menos 3 metros de arbustos. Nunca deixe o fogo sem supervisão.</p><div class="tip-box">🔥 <strong>Regra de ouro:</strong> Se não conseguir tocar as cinzas com a mão, o fogo não está apagado.</div>` },
+  { id:2, emoji:'🩹', tag:'SAÚDE', color:'linear-gradient(135deg,#3a1a1a,#8b3a3a)', title:'Primeiros Socorros no Campo', desc:'Procedimentos básicos de primeiros socorros para situações de emergência durante atividades externas.', nivel:'Básico', conteudo:`<h3>1. Protocolo ABC</h3><ul><li><strong>A — Airway:</strong> Vias aéreas desobstruídas</li><li><strong>B — Breathing:</strong> Verifique respiração</li><li><strong>C — Circulation:</strong> Verifique pulso e sangramento</li></ul><div class="tip-box">⚠️ Um socorrista ferido não pode ajudar ninguém. Segurança em primeiro lugar.</div><h3>2. Picadas de Cobra</h3><p>Imobilize o membro, mantenha abaixo do nível do coração e busque atendimento médico com urgência. Não aplique torniquete.</p>` },
+  { id:3, emoji:'🧭', tag:'NAVEGAÇÃO', color:'linear-gradient(135deg,#1a1a3a,#3a3a8b)', title:'Orientação e Navegação', desc:'Uso de bússola, leitura de mapas e navegação por estrelas e pontos cardeais.', nivel:'Avançado', conteudo:`<h3>1. Uso da Bússola</h3><p>O ponteiro vermelho sempre aponta para o Norte Magnético. No hemisfério sul, o Cruzeiro do Sul indica o Sul.</p><h3>2. Azimutes</h3><p>O azimute é medido em graus no sentido horário a partir do Norte (0°). Use dois pontos de referência para triangular a sua posição.</p><div class="tip-box">🌟 Pratique orientação durante os acampamentos do ESCADO.</div>` },
+  { id:4, emoji:'🪢', tag:'TÉCNICAS', color:'linear-gradient(135deg,#2a1a0a,#8b5e3c)', title:'Nós e Amarrações', desc:'Os principais nós escuteiros, suas aplicações práticas e como executá-los corretamente.', nivel:'Básico', conteudo:`<h3>Nós Fundamentais</h3><ul><li><strong>Nó simples:</strong> Base para outros nós</li><li><strong>Nó de oito:</strong> Mais resistente</li><li><strong>Nó de pescador:</strong> Une duas cordas iguais</li><li><strong>Volta do fiel:</strong> Amarração a mourões</li></ul><div class="tip-box">🪢 Um bom nó é aquele que você faz facilmente e consegue desfazer após muita tensão.</div>` },
+  { id:5, emoji:'🌿', tag:'NATUREZA', color:'linear-gradient(135deg,#0a2a1a,#1a5a3a)', title:'Flora e Fauna de Moçambique', desc:'Guia de identificação de plantas medicinais, animais nativos e espécies perigosas de Moçambique.', nivel:'Intermediário', conteudo:`<h3>Plantas Comestíveis</h3><p>Nunca consuma uma planta sem 100% de certeza da sua identificação.</p><div class="tip-box">⚠️ Em caso de dúvida, não consuma. Peça orientação a um líder experiente.</div><h3>Animais Peçonhentos em Moçambique</h3><p>Cobras (Mamba Negra, Cobra Cuspideira), escorpiões e aranhas requerem atenção especial em campo.</p>` },
+  { id:6, emoji:'✝️', tag:'FÉ', color:'linear-gradient(135deg,#2a2060,#4a2080)', title:'Espiritualidade e Fé Católica', desc:'A dimensão espiritual do escutismo católico, celebrações e vida sacramental.', nivel:'Básico', conteudo:`<h3>Animação da Fé</h3><p>O ESCADO orienta a sua ação pelos valores espirituais do Escutismo, iluminados pela fé católica.</p><h3>Eucaristia em Campo</h3><p>Os dirigentes devem zelar para que os Escuteiros participem na celebração eucarística dominical, inclusive nas atividades de campo.</p><div class="tip-box">🙏 Em qualquer atividade devem ser previstos tempos de oração comunitária.</div>` },
+];
+
+// ===== ESTADO =====
+let currentUser = null;
+let iaHistorico = [];
+let pendingGalleryUpload = null;
+let galleryPhotos = [];
+let chatMessages  = [];
+let membros       = [];
+let actividades   = [];
+let filtroMembros = 'todos';
+let conhecimento  = []; // Base de conhecimento IA
+
+// ===== CRYPTO — hash de senha =====
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function verificarChaveAdmin(chave) {
+  const hash = await sha256(chave);
+  const stored = lsLoad(LS_ADMINKEY, null);
+  if (stored) return hash === stored;
+  // Chave padrão "ESCADO2025" — na primeira utilização guardamos o hash
+  const defaultHash = await sha256('ESCADO2025');
+  return hash === defaultHash;
+}
+
+async function guardarNovaChave(chave) {
+  const hash = await sha256(chave);
+  lsSave(LS_ADMINKEY, hash);
+}
+
+// ===== LOCALSTORAGE =====
+function lsSave(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch(e) { return false; }
+}
+
+function lsLoad(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : fallback;
+  } catch(e) { return fallback; }
+}
+
+function saveChatMessages() {
+  // Guardar só mensagens de texto (sem imagens grandes)
+  const toSave = chatMessages.filter(m => !m.imageUrl).slice(-100);
+  lsSave(LS_CHAT, toSave);
+}
+
+function saveGalleryPhotos() {
+  // Tentar guardar; fotos com dataUrl podem ser grandes
+  const ok = lsSave(LS_GALLERY, galleryPhotos);
+  if (!ok) showToast('⚠️ Armazenamento cheio — foto não guardada permanentemente');
+}
+
+// ===== TOAST =====
+let toastTimer = null;
+function showToast(msg, duration = 3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ===== LOGIN / LOGOUT =====
+function onRoleChange(val) {
+  const isChefe = val.toLowerCase().includes('chefe') || val === 'Secretário' || val === 'Tesoureiro' || val === 'Assistente de Agrupamento';
+  const grupo = document.getElementById('admin-key-group');
+  if (isChefe) grupo.classList.add('visible');
+  else { grupo.classList.remove('visible'); document.getElementById('inp-admin-key').value = ''; }
+}
+
+function startLogin() { openModal('profile-modal'); }
+
+async function finishSetup() {
+  const email    = document.getElementById('inp-email').value.trim();
+  const name     = document.getElementById('inp-name').value.trim();
+  const patrulha = document.getElementById('inp-patrulha').value;
+  const role     = document.getElementById('inp-role').value;
+  const adminKey = document.getElementById('inp-admin-key').value.trim();
+
+  if (!email || !email.includes('@')) { showToast('⚠️ Insira um email válido'); return; }
+  if (!name)     { showToast('⚠️ Insira o seu nome'); return; }
+  if (!patrulha) { showToast('⚠️ Selecione a patrulha'); return; }
+  if (!role)     { showToast('⚠️ Selecione a função'); return; }
+
+  let isAdmin = false;
+  if (adminKey) {
+    isAdmin = await verificarChaveAdmin(adminKey);
+    if (!isAdmin) { showToast('❌ Chave de administrador incorrecta'); return; }
+  }
+
+  currentUser = {
+    name, email, patrulha, role, isAdmin,
+    loginTime: new Date().toLocaleTimeString('pt', { hour:'2-digit', minute:'2-digit' }),
+    initials: name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)
+  };
+  lsSave(LS_USER, currentUser);
+  closeModal('profile-modal');
+  document.getElementById('inp-admin-key').value = '';
+  launchApp();
+}
+
+function logout() {
+  if (!confirm('Tem a certeza que quer sair?')) return;
+  lsSave(LS_USER, null);
+  currentUser = null;
+  document.body.classList.remove('is-admin');
+  document.getElementById('admin-badge').classList.remove('visible');
+  document.getElementById('nav-gestao').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = '';
+  // Reset login form
+  document.getElementById('inp-email').value = '';
+  document.getElementById('inp-name').value = '';
+  document.getElementById('inp-patrulha').value = '';
+  document.getElementById('inp-role').value = '';
+  document.getElementById('admin-key-group').classList.remove('visible');
+}
+
+function launchApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+  document.getElementById('user-avatar').textContent = currentUser.initials;
+  document.getElementById('header-patrulha').textContent = currentUser.patrulha;
+  document.getElementById('welcome-msg').textContent = `Bem-vindo, ${currentUser.name.split(' ')[0]}! ⚜️`;
+
+  if (currentUser.isAdmin) {
+    document.body.classList.add('is-admin');
+    document.getElementById('admin-badge').classList.add('visible');
+    document.getElementById('nav-gestao').style.display = 'flex';
+    // Preencher info de segurança
+    document.getElementById('info-user-nome').textContent  = currentUser.name;
+    document.getElementById('info-user-role').textContent  = currentUser.role;
+    document.getElementById('info-sessao').textContent     = currentUser.loginTime || '--:--';
+  }
+
+  renderManuais();
+  renderGallery();
+  iniciarChatRealtime();
+  renderActividades();
+  renderMembros();
+  renderKnowledge();
+  updateApiKeyBtn();
+}
+
+// ===== NAVEGAÇÃO =====
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  const navMap = { inicio:0, manuais:1, galeria:2, chat:3, ia:4 };
+  if (id in navMap) document.querySelectorAll('.nav-item')[navMap[id]].classList.add('active');
+  else if (id === 'gestao') document.getElementById('nav-gestao').classList.add('active');
+}
+
+// ===== ADMIN PANELS =====
+function showAdminPanel(id, btn) {
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('admin-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ===== MANUAIS =====
+function renderManuais() {
+  document.getElementById('manuals-grid').innerHTML = manuais.map(m => `
+    <div class="manual-card" onclick="openManual(${m.id})">
+      <div class="manual-cover" style="background:${m.color}">
+        <span style="font-size:56px;position:relative;z-index:1">${m.emoji}</span>
+      </div>
+      <div class="manual-body">
+        <div class="manual-tag">${m.tag}</div>
+        <div class="manual-title">${m.title}</div>
+        <div class="manual-desc">${m.desc}</div>
+        <div class="manual-meta">
+          <span class="tag-badge verde">${m.nivel}</span>
+          <button class="btn-open" onclick="event.stopPropagation();openManual(${m.id})">Abrir →</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function openManual(id) {
+  const m = manuais.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('manuals-list').classList.add('hidden');
+  const v = document.getElementById('manual-viewer');
+  v.classList.add('active');
+  document.getElementById('viewer-tag').textContent = m.tag;
+  document.getElementById('viewer-title').textContent = m.title;
+  document.getElementById('viewer-body').innerHTML = m.conteudo;
+  v.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeViewer() {
+  document.getElementById('manual-viewer').classList.remove('active');
+  document.getElementById('manuals-list').classList.remove('hidden');
+}
+
+// ===== GALERIA =====
+function renderGallery() {
+  const grid = document.getElementById('gallery-grid');
+  document.getElementById('photo-count').textContent = galleryPhotos.length;
+  if (galleryPhotos.length === 0) {
+    grid.innerHTML = `<div class="gallery-empty" style="grid-column:1/-1"><div class="gallery-empty-icon">📷</div><p>Nenhuma foto ainda. Adicione a primeira!</p></div>`;
+    return;
+  }
+  grid.innerHTML = galleryPhotos.map(p => {
+    if (p.dataUrl) {
+      return `<div class="gallery-item" onclick="openLightbox('img:${escapeAttr(p.dataUrl)}','${escapeAttr(p.label)}')">
+        <img src="${p.dataUrl}" style="width:100%;height:100%;object-fit:cover" loading="lazy"/>
+        <div class="gallery-overlay"><span class="gallery-label">${escapeHtml(p.label)}</span></div>
+      </div>`;
+    }
+    return `<div class="gallery-item" onclick="openLightbox('emoji:${p.emoji}','${escapeAttr(p.label)}')">
+      <div class="gallery-img">${p.emoji}</div>
+      <div class="gallery-overlay"><span class="gallery-label">${escapeHtml(p.label)}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function handleGalleryUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('⚠️ Imagem muito grande (máx. 5 MB)'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    pendingGalleryUpload = ev.target.result;
+    document.getElementById('upload-zone').classList.add('has-file');
+    document.getElementById('upload-icon').textContent = '✅';
+    document.getElementById('upload-zone-text').textContent = file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+function confirmGalleryUpload() {
+  if (!pendingGalleryUpload) { showToast('⚠️ Selecione uma imagem primeiro'); return; }
+  const caption = document.getElementById('gallery-caption-inp').value.trim() || 'Foto do grupo';
+  galleryPhotos.push({ id: Date.now(), dataUrl: pendingGalleryUpload, label: caption });
+  saveGalleryPhotos();
+  pendingGalleryUpload = null;
+  document.getElementById('gallery-caption-inp').value = '';
+  document.getElementById('gallery-file-input').value = '';
+  document.getElementById('upload-zone').classList.remove('has-file');
+  document.getElementById('upload-icon').textContent = '📁';
+  document.getElementById('upload-zone-text').textContent = 'Clique para selecionar uma imagem';
+  closeModal('gallery-upload-modal');
+  renderGallery();
+  showToast('✅ Foto adicionada com sucesso!');
+}
+
+// ===== LIGHTBOX =====
+function openLightbox(src, caption) {
+  const lb  = document.getElementById('lightbox');
+  const img = document.getElementById('lightbox-img');
+  lb.classList.add('active');
+  document.getElementById('lightbox-caption').textContent = caption;
+  if (src.startsWith('emoji:')) {
+    img.innerHTML = `<span style="font-size:120px;line-height:1">${src.replace('emoji:','')}</span>`;
+  } else if (src.startsWith('img:')) {
+    img.innerHTML = `<img src="${src.slice(4)}" style="max-width:100%;max-height:70vh;border-radius:10px;display:block"/>`;
+  } else {
+    img.innerHTML = `<img src="${src}" style="max-width:100%;max-height:70vh;border-radius:10px;display:block"/>`;
+  }
+}
+
+function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
+
+// ===== CHAT =====
+function renderChat() {
+  // Mensagens serão carregadas do Supabase ao iniciar o app
+  const c = document.getElementById('chat-messages');
+  c.innerHTML = '<div class="date-divider">A carregar mensagens...</div>';
+}
+
+function renderMsg(m) {
+  const cls = m.me ? 'me' : 'other';
+  let content = '';
+  if (m.imageUrl) {
+    content = `<div class="msg-img" onclick="openLightbox('${escapeAttr(m.imageUrl)}','Foto de ${escapeAttr(m.sender)}')"><img src="${m.imageUrl}" loading="lazy"/></div>`;
+  } else {
+    content = `<div class="msg-bubble">${escapeHtml(m.text)}</div>`;
+  }
+  return `<div class="msg-wrapper ${cls}">${!m.me ? `<div class="msg-sender">${escapeHtml(m.sender)}</div>` : ''}${content}<div class="msg-time">${m.time}</div></div>`;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text  = input.value.trim();
+  if (!text) return;
+  const time = nowTime();
+
+  input.value = ''; input.style.height = 'auto';
+
+  const { error } = await supabaseClient.from('chat').insert([{
+    sender: currentUser ? currentUser.name : 'Anónimo',
+    email:  currentUser ? currentUser.email : '',
+    text,
+    time
+  }]);
+
+  if (error) {
+    showToast('❌ Erro ao enviar mensagem: ' + error.message);
+    input.value = text; // restaurar texto se falhar
+  }
+}
+
+function sendChatImage(e) {
+  const file = e.target.files[0]; if (!file) return;
+  if (file.size > 3 * 1024 * 1024) { showToast('⚠️ Imagem muito grande (máx. 3 MB)'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const time = nowTime();
+    const msg = { id: Date.now(), sender: currentUser ? currentUser.name : 'Você', imageUrl: ev.target.result, time, me: true };
+    chatMessages.push(msg);
+    // Não guardar imagens no localStorage (muito pesadas)
+    const c = document.getElementById('chat-messages');
+    c.insertAdjacentHTML('beforeend', renderMsg(msg));
+    c.scrollTop = c.scrollHeight;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function handleChatKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+
+// ===== ASSISTENTE IA =====
+function updateApiKeyBtn() {
+  const key = lsLoad(LS_APIKEY, '');
+  const btn = document.getElementById('btn-apikey');
+  if (key && key.startsWith('AIza')) {
+    btn.textContent = '🔑 API ✓';
+    btn.classList.add('configured');
+  } else {
+    btn.textContent = '🔑 Chave API';
+    btn.classList.remove('configured');
+  }
+}
+
+function toggleApiKeyBar() {
+  const bar = document.getElementById('ia-apikey-bar');
+  const isVisible = bar.classList.contains('visible');
+  if (isVisible) {
+    bar.classList.remove('visible');
+  } else {
+    bar.classList.add('visible');
+    const saved = lsLoad(LS_APIKEY, '');
+    document.getElementById('ia-apikey-inp').value = saved || '';
+    document.getElementById('ia-apikey-inp').focus();
+  }
+}
+
+function saveApiKey() {
+  const key = document.getElementById('ia-apikey-inp').value.trim();
+  if (!key) { showToast('⚠️ Insira a chave API'); return; }
+  if (!key.startsWith('AIza')) { showToast('⚠️ Chave inválida — deve começar com AIza'); return; }
+  lsSave(LS_APIKEY, key);
+  document.getElementById('ia-apikey-bar').classList.remove('visible');
+  updateApiKeyBtn();
+  showToast('✅ Chave API guardada!');
+}
+
+function iaHandleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); iaEnviar(); } }
+function iaPerRapida(texto) { document.getElementById('ia-input').value = texto; iaEnviar(); }
+
+function iaAddMsg(role, text) {
+  const container = document.getElementById('ia-messages');
+  const empty = document.getElementById('ia-empty');
+  if (empty) empty.remove();
+  const nome   = role === 'user' ? (currentUser ? currentUser.name : 'Você') : 'Assistente ESCADO';
+  const avatar = role === 'user' ? '👤' : '⚜️';
+  const div = document.createElement('div');
+  div.className = 'ia-msg ' + role;
+  div.innerHTML = `
+    <div class="ia-avatar">${avatar}</div>
+    <div class="ia-body">
+      <div class="ia-name">${escapeHtml(nome)}</div>
+      <div class="ia-text">${escapeHtml(text)}</div>
+    </div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function iaAddThinking() {
+  const container = document.getElementById('ia-messages');
+  const div = document.createElement('div');
+  div.className = 'ia-msg ai'; div.id = 'ia-thinking';
+  div.innerHTML = `<div class="ia-avatar">⚜️</div><div class="ia-body"><div class="ia-name">Assistente ESCADO</div><div class="ia-thinking"><span></span><span></span><span></span></div></div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function iaRemoveThinking() { const el = document.getElementById('ia-thinking'); if (el) el.remove(); }
+
+async function iaEnviar() {
+  const input    = document.getElementById('ia-input');
+  const pergunta = input.value.trim();
+  if (!pergunta) return;
+
+  const apiKey = lsLoad(LS_APIKEY, '');
+  if (!apiKey || !apiKey.startsWith('AIza')) {
+    document.getElementById('ia-apikey-bar').classList.add('visible');
+    document.getElementById('ia-apikey-inp').focus();
+    showToast('🔑 Configure a Chave API Google primeiro');
+    return;
+  }
+
+  const statusEl = document.getElementById('ia-status');
+  statusEl.innerHTML = '';
+  input.value = '';
+  input.style.height = 'auto';
+  document.getElementById('ia-send-btn').disabled = true;
+
+  iaAddMsg('user', pergunta);
+  iaHistorico.push({ role: 'user', content: pergunta });
+  iaAddThinking();
+
+  // Extrair texto dos manuais (sem HTML)
+  const manuaisTexto = manuais.map(m =>
+    `=== MANUAL: ${m.title.toUpperCase()} [${m.tag}] ===\n` + stripHtml(m.conteudo)
+  ).join('\n\n');
+
+  // Texto da base de conhecimento adicional
+  const knowledgeTexto = conhecimento.length > 0
+    ? '\n\n=== BASE DE CONHECIMENTO ADICIONAL ===\n' +
+      conhecimento.map(k => `--- ${k.title} ---\n${k.content}`).join('\n\n')
+    : '';
+
+  const systemPrompt = `És o assistente oficial dos Escoteiros Católicos do Dondo (ESCADO), Agrupamento 06, Paróquia Santa Ana do Dondo, Sofala, Moçambique.
+Responde SEMPRE com base no conteúdo fornecido sobre o grupo.
+Se a informação não estiver no conteúdo disponível, diz isso honestamente.
+Sê respeitoso, útil e representa os valores escuteiros: lealdade, serviço, fé e honra.
+Responde em Português de Moçambique.
+Quando listares itens, usa • ou numeração. Mantém as respostas claras e concisas.
+
+CONTEÚDO OFICIAL DO GRUPO:
+${CONTEUDO_ESCADO}
+
+=== MANUAIS DO PORTAL ESCADO ===
+${manuaisTexto}${knowledgeTexto}`;
+
+  try {
+    const contents = iaHistorico.slice(-12).map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents,
+          generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
+        })
+      }
+    );
+
+    const data = await res.json();
+    iaRemoveThinking();
+
+    if (data.error) {
+      const errMsg = data.error.message || 'Erro desconhecido';
+      statusEl.innerHTML = `<span class="badge err"><span class="dot r"></span>${errMsg}</span>`;
+      if (data.error.status === 'INVALID_ARGUMENT' || data.error.status === 'UNAUTHENTICATED') {
+        showToast('🔑 Chave API inválida ou expirada');
+        document.getElementById('ia-apikey-bar').classList.add('visible');
+      }
+      iaHistorico.pop();
+    } else {
+      const resposta = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+      if (!resposta) { statusEl.innerHTML = `<span class="badge err"><span class="dot r"></span>Resposta vazia do Gemini</span>`; iaHistorico.pop(); }
+      else {
+        iaHistorico.push({ role: 'assistant', content: resposta });
+        iaAddMsg('ai', resposta);
+        statusEl.innerHTML = `<span class="badge ok"><span class="dot g"></span>Resposta recebida</span>`;
+        setTimeout(() => { statusEl.innerHTML = ''; }, 3000);
+      }
+    }
+  } catch (err) {
+    iaRemoveThinking();
+    statusEl.innerHTML = `<span class="badge err"><span class="dot r"></span>Erro de ligação: ${escapeHtml(err.message)}</span>`;
+    iaHistorico.pop();
+  }
+
+  document.getElementById('ia-send-btn').disabled = false;
+  input.focus();
+}
+
+// ===== GESTÃO DE MEMBROS =====
+const DEFAULT_MEMBROS = [
+  { id:1, nome:'Ana Paula Raimundo', patrulha:'Dirigente', funcao:'Secretário', ano:2021, activo:true },
+  { id:2, nome:'Oldumar Ernesto', patrulha:'Patrulha Leão', funcao:'Chefe de Patrulha', ano:2021, activo:true },
+  { id:3, nome:'Manuel Ferreira', patrulha:'Patrulha Águia', funcao:'Chefe de Patrulha', ano:2021, activo:true },
+  { id:4, nome:'Adriel Titos', patrulha:'Patrulha Leão', funcao:'Escuteiro', ano:2022, activo:true },
+  { id:5, nome:'Sofia Ferreira', patrulha:'Patrulha Cobra', funcao:'Escuteiro', ano:2022, activo:true },
+  { id:6, nome:'Nelson Will Wilson', patrulha:'Patrulha Águia', funcao:'Escuteiro', ano:2023, activo:true },
+];
+
+function renderMembros() {
+  if (!currentUser?.isAdmin) return;
+  const tbody = document.getElementById('membros-tbody');
+  if (!tbody) return;
+  const lista = filtroMembros === 'todos' ? membros
+    : membros.filter(m => filtroMembros === 'activo' ? m.activo : !m.activo);
+  document.getElementById('membros-count').textContent = `${lista.length} membros`;
+  tbody.innerHTML = lista.length === 0
+    ? `<tr><td colspan="6" style="text-align:center;color:var(--texto-sub);padding:24px">Nenhum membro encontrado</td></tr>`
+    : lista.map(m => `
+      <tr>
+        <td style="color:var(--creme);font-weight:500">${escapeHtml(m.nome)}</td>
+        <td>${escapeHtml(m.patrulha || '—')}</td>
+        <td>${escapeHtml(m.funcao || '—')}</td>
+        <td style="font-family:'DM Mono';font-size:12px">${m.ano || '—'}</td>
+        <td><span class="membro-status ${m.activo ? 'activo' : 'inactivo'}">${m.activo ? '● Activo' : '○ Arquivado'}</span></td>
+        <td style="display:flex;gap:6px;flex-wrap:wrap">
+          ${m.activo
+            ? `<button class="btn-sm danger" onclick="arquivarMembro(${m.id})">Arquivar</button>`
+            : `<button class="btn-sm restore" onclick="reactivarMembro(${m.id})">Reactivar</button>`}
+          <button class="btn-sm danger" onclick="eliminarMembro(${m.id})">Eliminar</button>
+        </td>
+      </tr>`).join('');
+}
+
+function filtrarMembros(tipo, btn) {
+  filtroMembros = tipo;
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMembros();
+}
+
+function adicionarMembro() {
+  const nome  = document.getElementById('novo-nome').value.trim();
+  const patr  = document.getElementById('novo-patrulha').value;
+  const func  = document.getElementById('novo-funcao').value;
+  const ano   = parseInt(document.getElementById('novo-ano').value) || new Date().getFullYear();
+  if (!nome) { showToast('⚠️ Insira o nome do membro'); return; }
+  if (!patr) { showToast('⚠️ Selecione a patrulha'); return; }
+  membros.push({ id: Date.now(), nome, patrulha: patr, funcao: func, ano, activo: true });
+  lsSave(LS_MEMBROS, membros);
+  document.getElementById('novo-nome').value = '';
+  document.getElementById('novo-patrulha').value = '';
+  document.getElementById('novo-ano').value = '';
+  renderMembros();
+  atualizarContadorMembros();
+  showToast(`✅ ${nome} adicionado(a)!`);
+}
+
+function arquivarMembro(id) {
+  const m = membros.find(x => x.id === id);
+  if (!m || !confirm(`Arquivar "${m.nome}"? O registo será mantido.`)) return;
+  m.activo = false; m.anoSaida = new Date().getFullYear();
+  lsSave(LS_MEMBROS, membros);
+  renderMembros(); atualizarContadorMembros();
+  showToast(`📁 ${m.nome} arquivado(a)`);
+}
+
+function reactivarMembro(id) {
+  const m = membros.find(x => x.id === id);
+  if (!m) return;
+  m.activo = true; delete m.anoSaida;
+  lsSave(LS_MEMBROS, membros);
+  renderMembros(); atualizarContadorMembros();
+  showToast(`✅ ${m.nome} reactivado(a)`);
+}
+
+function eliminarMembro(id) {
+  const m = membros.find(x => x.id === id);
+  if (!m || !confirm(`Eliminar permanentemente "${m.nome}"? Esta acção não pode ser desfeita.`)) return;
+  membros = membros.filter(x => x.id !== id);
+  lsSave(LS_MEMBROS, membros);
+  renderMembros(); atualizarContadorMembros();
+  showToast(`🗑️ Membro eliminado`);
+}
+
+function atualizarContadorMembros() {
+  const activos = membros.filter(m => m.activo).length;
+  const el = document.querySelector('.stat-num');
+  // Actualiza o primeiro stat (membros)
+  document.querySelectorAll('.stat-num')[0].textContent = activos;
+}
+
+// ===== GESTÃO DE ACTIVIDADES =====
+const DEFAULT_ACTIVIDADES = [
+  { id:1, texto:'Retiro de Formação Escutista realizado em <strong>agosto 2023</strong> — Bairro de Mafarinha', data:'ago 2023', cor:'verde' },
+  { id:2, texto:'Regulamento Interno revisto em <strong>outubro 2022</strong>', data:'out 2022', cor:'yellow' },
+  { id:3, texto:'Lista nominal 2023 — <strong>~90 membros</strong> registados', data:'jun 2023', cor:'verde' },
+  { id:4, texto:'Assistente IA ESCADO disponível no portal', data:'Agora', cor:'brown' },
+];
+
+function renderActividades() {
+  // Render na secção de início
+  const feed = document.getElementById('activity-feed-main');
+  if (feed) feed.innerHTML = actividades.map(a => `
+    <div class="activity-item">
+      <div class="activity-dot ${a.cor}"></div>
+      <div class="activity-text">${a.texto}</div>
+      <div class="activity-time">${a.data}</div>
+    </div>`).join('');
+
+  // Render no painel admin
+  const afeed = document.getElementById('admin-activity-feed');
+  if (!afeed) return;
+  afeed.innerHTML = actividades.length === 0
+    ? `<div style="padding:20px;text-align:center;color:var(--texto-sub)">Nenhuma atividade</div>`
+    : actividades.map(a => `
+      <div class="activity-item">
+        <div class="activity-dot ${a.cor}"></div>
+        <div class="activity-text">${a.texto}</div>
+        <div class="activity-time">${a.data}</div>
+        <button class="btn-del" onclick="eliminarActividade(${a.id})" title="Eliminar">🗑️</button>
+      </div>`).join('');
+}
+
+function adicionarActividade() {
+  const texto = document.getElementById('nova-act-texto').value.trim();
+  const data  = document.getElementById('nova-act-data').value.trim();
+  const cor   = document.getElementById('nova-act-cor').value;
+  if (!texto) { showToast('⚠️ Insira a descrição da atividade'); return; }
+  if (!data)  { showToast('⚠️ Insira a data'); return; }
+  actividades.unshift({ id: Date.now(), texto, data, cor });
+  lsSave(LS_ACTIVS, actividades);
+  document.getElementById('nova-act-texto').value = '';
+  document.getElementById('nova-act-data').value = '';
+  renderActividades();
+  showToast('✅ Atividade adicionada!');
+}
+
+function eliminarActividade(id) {
+  if (!confirm('Eliminar esta atividade?')) return;
+  actividades = actividades.filter(a => a.id !== id);
+  lsSave(LS_ACTIVS, actividades);
+  renderActividades();
+  showToast('🗑️ Atividade eliminada');
+}
+
+// ===== SEGURANÇA — ALTERAR CHAVE =====
+async function alterarChaveAdmin() {
+  const atual    = document.getElementById('chave-atual').value.trim();
+  const nova     = document.getElementById('chave-nova').value.trim();
+  const confirma = document.getElementById('chave-confirma').value.trim();
+  if (!atual || !nova || !confirma) { showToast('⚠️ Preencha todos os campos'); return; }
+  if (nova.length < 6) { showToast('⚠️ A nova chave deve ter pelo menos 6 caracteres'); return; }
+  if (nova !== confirma) { showToast('❌ As chaves não coincidem'); return; }
+  const correcta = await verificarChaveAdmin(atual);
+  if (!correcta) { showToast('❌ Chave actual incorrecta'); return; }
+  await guardarNovaChave(nova);
+  document.getElementById('chave-atual').value = '';
+  document.getElementById('chave-nova').value = '';
+  document.getElementById('chave-confirma').value = '';
+  showToast('✅ Chave alterada com sucesso! Guarde a nova chave em lugar seguro.', 5000);
+}
+
+// ===== UTILS =====
+function nowTime() {
+  const n = new Date();
+  return n.getHours() + ':' + String(n.getMinutes()).padStart(2,'0');
+}
+
+function escapeHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function escapeAttr(s) {
+  if (!s) return '';
+  return String(s).replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+}
+
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; }
+function openModal(id)  { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+// ===== TECLADO =====
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeLightbox();
+    closeModal('gallery-upload-modal');
+    closeModal('profile-modal');
+    document.getElementById('ia-apikey-bar').classList.remove('visible');
+  }
+});
+
+// ===== INIT =====
+(function init() {
+  // Carregar dados persistidos
+  galleryPhotos = lsLoad(LS_GALLERY, null) || [...DEFAULT_GALLERY];
+  chatMessages  = lsLoad(LS_CHAT,    null) || [...DEFAULT_CHAT];
+  membros       = lsLoad(LS_MEMBROS, null) || [...DEFAULT_MEMBROS];
+  actividades   = lsLoad(LS_ACTIVS,  null) || [...DEFAULT_ACTIVIDADES];
+  conhecimento  = lsLoad(LS_KNOWLEDGE, null) || [];
+
+  // Auto-login se sessão guardada
+  const savedUser = lsLoad(LS_USER, null);
+  if (savedUser && savedUser.name) {
+    currentUser = savedUser;
+    launchApp();
+  }
+})();
+
+// ===== BASE DE CONHECIMENTO IA =====
+
+// Configurar pdf.js worker
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+function stripHtml(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+}
+
+function renderKnowledge() {
+  if (!currentUser?.isAdmin) return;
+  const list  = document.getElementById('knowledge-list');
+  const count = document.getElementById('k-count');
+  const chars = document.getElementById('k-chars');
+  const kman  = document.getElementById('k-manuais');
+  if (!list) return;
+
+  if (kman) kman.textContent = manuais.length;
+  if (count) count.textContent = conhecimento.length;
+  if (chars) {
+    const total = conhecimento.reduce((s, k) => s + k.content.length, 0) +
+                  manuais.reduce((s, m) => s + stripHtml(m.conteudo).length, 0);
+    chars.textContent = total.toLocaleString('pt');
+  }
+
+  if (conhecimento.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--texto-sub);font-size:13px">Nenhum documento adicionado ainda.</div>';
+    return;
+  }
+
+  list.innerHTML = conhecimento.map((k, i) => `
+    <div class="knowledge-item">
+      <div class="knowledge-item-icon">${k.type === 'pdf' ? '📄' : '📝'}</div>
+      <div class="knowledge-item-info">
+        <div class="knowledge-item-name" title="${escapeHtml(k.title)}">${escapeHtml(k.title)}</div>
+        <div class="knowledge-item-meta">${k.type.toUpperCase()} · ${k.content.length.toLocaleString('pt')} caracteres · adicionado ${k.date}</div>
+      </div>
+      <button class="btn-del" onclick="deleteKnowledge(${i})" title="Remover">🗑️</button>
+    </div>`).join('');
+}
+
+function deleteKnowledge(idx) {
+  if (!confirm(`Remover "${conhecimento[idx].title}" da Base IA?`)) return;
+  conhecimento.splice(idx, 1);
+  lsSave(LS_KNOWLEDGE, conhecimento);
+  renderKnowledge();
+  showToast('🗑️ Documento removido da Base IA');
+}
+
+function addKnowledgeText() {
+  const title   = document.getElementById('knowledge-title').value.trim();
+  const content = document.getElementById('knowledge-text').value.trim();
+  if (!title)   { showToast('⚠️ Insira o título do documento'); return; }
+  if (!content || content.length < 20) { showToast('⚠️ O conteúdo é demasiado curto'); return; }
+  conhecimento.push({
+    id: Date.now(), title, content, type: 'text',
+    date: new Date().toLocaleDateString('pt', { day:'2-digit', month:'short', year:'numeric' })
+  });
+  lsSave(LS_KNOWLEDGE, conhecimento);
+  document.getElementById('knowledge-title').value = '';
+  document.getElementById('knowledge-text').value = '';
+  renderKnowledge();
+  showToast('✅ Texto adicionado à Base IA!');
+}
+
+function handleKnowledgeDrop(e) {
+  e.preventDefault();
+  document.getElementById('knowledge-drop').classList.remove('drag-over');
+  const files = Array.from(e.dataTransfer.files).filter(f => f.name.match(/\.(pdf|txt)$/i));
+  if (!files.length) { showToast('⚠️ Arraste apenas ficheiros PDF ou TXT'); return; }
+  processKnowledgeFiles(files);
+}
+
+function handleKnowledgeFile(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  processKnowledgeFiles(files);
+  e.target.value = '';
+}
+
+async function processKnowledgeFiles(files) {
+  const prog     = document.getElementById('knowledge-progress');
+  const progFill = document.getElementById('knowledge-progress-fill');
+  const progText = document.getElementById('knowledge-progress-text');
+  prog.style.display = 'block';
+
+  let added = 0;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    progText.textContent = `A processar: ${file.name} (${i+1}/${files.length})`;
+    progFill.style.width = Math.round(((i) / files.length) * 100) + '%';
+
+    if (file.size > 10 * 1024 * 1024) { showToast(`⚠️ ${file.name} excede 10 MB — ignorado`); continue; }
+
+    try {
+      let text = '';
+      if (file.name.toLowerCase().endsWith('.pdf')) {
+        text = await extractPdfText(file, (pct) => {
+          progFill.style.width = Math.round(((i + pct) / files.length) * 100) + '%';
+        });
+      } else {
+        text = await file.text();
+      }
+
+      text = text.trim();
+      if (text.length < 20) { showToast(`⚠️ ${file.name} não tem conteúdo legível`); continue; }
+
+      // Limitar a 50.000 caracteres por documento
+      if (text.length > 50000) {
+        text = text.slice(0, 50000);
+        showToast(`ℹ️ ${file.name} cortado a 50 000 caracteres`);
+      }
+
+      const title = file.name.replace(/\.(pdf|txt)$/i, '');
+      conhecimento.push({
+        id: Date.now() + i, title, content: text,
+        type: file.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'txt',
+        date: new Date().toLocaleDateString('pt', { day:'2-digit', month:'short', year:'numeric' })
+      });
+      added++;
+    } catch (err) {
+      console.error('Erro ao processar', file.name, err);
+      showToast(`❌ Erro ao ler ${file.name}`);
+    }
+  }
+
+  progFill.style.width = '100%';
+  setTimeout(() => { prog.style.display = 'none'; progFill.style.width = '0%'; }, 800);
+
+  if (added > 0) {
+    lsSave(LS_KNOWLEDGE, conhecimento);
+    renderKnowledge();
+    showToast(`✅ ${added} documento(s) adicionado(s) à Base IA!`);
+  }
+}
+
+async function extractPdfText(file, onProgress) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let text = '';
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page    = await pdf.getPage(p);
+    const content = await page.getTextContent();
+    text += content.items.map(i => i.str).join(' ') + '\n';
+    if (onProgress) onProgress(p / pdf.numPages);
+  }
+  return text;
+}
+
+// ===== SUPABASE — CHAT EM TEMPO REAL =====
+const SUPABASE_URL = 'https://acpwwtlhiazwkifokziy.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_BqaUrEffbvv_AfHgs600zQ_JaUudmNf';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let chatRealtimeChannel = null;
+
+async function iniciarChatRealtime() {
+  // Carregar mensagens existentes
+  const c = document.getElementById('chat-messages');
+  c.innerHTML = '<div class="date-divider">Hoje</div>';
+
+  const { data, error } = await supabaseClient
+    .from('chat')
+    .select('*')
+    .order('created_at', { ascending: true })
+    .limit(80);
+
+  if (error) {
+    c.innerHTML = '<div class="date-divider" style="color:#ff7070">Erro ao carregar mensagens</div>';
+    console.error('Supabase load error:', error);
+  } else if (data && data.length > 0) {
+    data.forEach(m => {
+      const msg = {
+        sender: m.sender || 'Desconhecido',
+        text: m.text,
+        time: m.time || '--:--',
+        me: currentUser && m.email === currentUser.email
+      };
+      c.insertAdjacentHTML('beforeend', renderMsg(msg));
+    });
+    c.scrollTop = c.scrollHeight;
+  }
+
+  // Cancelar canal anterior se existir
+  if (chatRealtimeChannel) {
+    supabaseClient.removeChannel(chatRealtimeChannel);
+  }
+
+  // Subscrever a novas mensagens em tempo real
+  chatRealtimeChannel = supabaseClient
+    .channel('chat-realtime')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'chat' },
+      (payload) => {
+        const m = payload.new;
+        // Evitar duplicar a mensagem própria se já foi renderizada optimisticamente
+        const msg = {
+          sender: m.sender || 'Desconhecido',
+          text: m.text,
+          time: m.time || '--:--',
+          me: currentUser && m.email === currentUser.email
+        };
+        const container = document.getElementById('chat-messages');
+        container.insertAdjacentHTML('beforeend', renderMsg(msg));
+        container.scrollTop = container.scrollHeight;
+      }
+    )
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('Chat em tempo real activo ✅');
+      }
+    });
+}
+</script>
+</body>
+</html>
